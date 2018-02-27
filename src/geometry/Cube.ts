@@ -72,23 +72,23 @@ class Cube extends Drawable {
     var offset = positions.length/4;
   
     indices.push(0 + offset, 1 + offset, 2 + offset, 0 + offset, 2 + offset, 3 + offset, //front
-                  4 + offset, 5 + offset, 6 + offset, 4 + offset, 6 + offset, 7 + offset, //right
-                  8 + offset, 9 + offset, 10 + offset, 8 + offset, 10 + offset, 11 + offset, //back
+                  4 + offset, 6 + offset, 5 + offset, 4 + offset, 7 + offset, 6 + offset, //right
+                  8 + offset, 10 + offset, 9 + offset, 8 + offset, 11 + offset, 10 + offset, //back
                   12 + offset, 13 + offset, 14 + offset, 12 + offset, 14 + offset, 15 + offset, //left
-                  16 + offset, 17 + offset, 18 + offset, 16 + offset, 18 + offset, 19 + offset, //upper
+                  16 + offset, 18 + offset, 17 + offset, 16 + offset, 19 + offset, 18 + offset, //upper
                   20 + offset, 21 + offset, 22 + offset, 20 + offset, 22 + offset, 23 + offset); // button
   
     var vector = vec4.create();
     vec4.transformMat4(vector, vec4.fromValues(0, 0, 1, 0), inverseTransformMatrix);//front
     this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
   
-    vec4.transformMat4(vector, vec4.fromValues(-1, 0, 0, 0), inverseTransformMatrix);//right
+    vec4.transformMat4(vector, vec4.fromValues(1, 0, 0, 0), inverseTransformMatrix);//right
     this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
   
     vec4.transformMat4(vector, vec4.fromValues(0, 0, -1, 0), inverseTransformMatrix);//back
     this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
   
-    vec4.transformMat4(vector, vec4.fromValues(1, 0, 0, 0), inverseTransformMatrix);//left
+    vec4.transformMat4(vector, vec4.fromValues(-1, 0, 0, 0), inverseTransformMatrix);//left
     this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
   
     vec4.transformMat4(vector, vec4.fromValues(0, 1, 0, 0), inverseTransformMatrix);//up
@@ -165,7 +165,7 @@ class Cube extends Drawable {
   var sections = new Array<Section>();
   var allsections = new Array<Section>();
 
-  var iteration = 5.0;
+  var iteration = 6.0;
 
   var halfweight = Math.random() * 0.5 + 0.5; // X
   var halfheight = Math.random() * 0.5 + 0.5; // Y

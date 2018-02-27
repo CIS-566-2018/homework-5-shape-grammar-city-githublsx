@@ -14,7 +14,7 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 const controls = {
   tesselations: 6,
   'Load Scene': loadScene, // A function pointer, essentially
-  color: [182, 255, 208],
+  color: [164, 167, 179],
   shader: 'fun',
   drawable: 'sphere',
 };
@@ -65,7 +65,7 @@ function main() {
   const camera = new Camera(vec3.fromValues(3, 3, 3), vec3.fromValues(0, 0, 0));
 
   const renderer = new OpenGLRenderer(canvas);
-  renderer.setClearColor(0.2, 0.2, 0.2, 1);
+  renderer.setClearColor(0.9, 0.9, 0.85, 1);
   gl.enable(gl.DEPTH_TEST);
   gl.cullFace(gl.BACK);
   gl.enable(gl.CULL_FACE);

@@ -36,6 +36,8 @@ class OpenGLRenderer {
     //var d = new Date();
     //let time = (d.getTime());
     prog.setTime(time);
+    prog.setCamerapos(vec4.fromValues(camera.controls.eye[0], camera.controls.eye[1], camera.controls.eye[2], 1.0));
+    //console.log(camera.controls.eye);
     //prog.setTime(Math.sin(time));
 
     for (let drawable of drawables) {

@@ -60,20 +60,14 @@ class Cube extends Drawable {
     return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
   }
 
-  createtriangularprism(indices: number[], positions: number[], normals: number[], scalingVector: vec3, translationVector: vec3)
+  createtriangularprism(indices: number[], positions: number[], normals: number[], scalingVector: vec3, translationVector: vec3, rotate: number)
   {
     var translationMatrix = mat4.create();
     mat4.fromTranslation(translationMatrix, translationVector);
     var rotationMatrix = mat4.create();
-    var randomint = this.getRandomInt(0, 2);
-    mat4.fromYRotation(rotationMatrix, randomint * Math.PI * 0.5);
+    
+    mat4.fromYRotation(rotationMatrix, rotate * Math.PI * 0.5);
     var scaleMatrix = mat4.create();
-    if(randomint==1)
-    {
-      let temp = scalingVector[0];
-      scalingVector[0] = scalingVector[2];
-      scalingVector[2] = temp;
-    }
     mat4.fromScaling(scaleMatrix, scalingVector);
   
     var transformMatrix = mat4.create();
@@ -157,11 +151,13 @@ class Cube extends Drawable {
 
   }
 
-  createtriangularroof(indices: number[], positions: number[], normals: number[], scalingVector: vec3, translationVector: vec3, scalingVector2: vec3)
+  createtriangularroof(indices: number[], positions: number[], normals: number[], scalingVector: vec3, translationVector: vec3, scalingVector2: vec3, rotate: number)
   {
     var translationMatrix = mat4.create();
     mat4.fromTranslation(translationMatrix, translationVector);
     var rotationMatrix = mat4.create();
+    
+    mat4.fromYRotation(rotationMatrix, rotate * Math.PI * 0.5);
     var scaleMatrix = mat4.create();
     mat4.fromScaling(scaleMatrix, scalingVector);
   
@@ -173,77 +169,208 @@ class Cube extends Drawable {
     mat4.invert(inverseTransformMatrix, inverseTransformMatrix);
 
     var offset = positions.length/4;
-  
-    indices.push(0 + offset, 1 + offset, 2 + offset, 0 + offset, 2 + offset, 3 + offset, //button
-                  4 + offset, 5 + offset, 6 + offset,  //front
-                  7 + offset, 9 + offset, 8 + offset, 7 + offset, 10 + offset, 9 + offset, //right
-                  11 + offset, 13 + offset, 12 + offset,  //back
-                  14 + offset, 15 + offset, 16 + offset, 14 + offset, 16 + offset, 17 + offset) //left
-  
-    var vector = vec4.create();
-    vec4.transformMat4(vector, vec4.fromValues(0, -1, 0, 0), inverseTransformMatrix);//buttom
-    this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
 
-    vec4.transformMat4(vector, vec4.fromValues(0, 0, 1, 0), inverseTransformMatrix);//front
-    this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
-  
+      
+    indices.push(0 + offset, 2 + offset, 1 + offset, 0 + offset, 3 + offset, 2 + offset, //rightup
+      4 + offset, 5 + offset, 6 + offset, 4 + offset, 6 + offset, 7 + offset, //leftup
+      8 + offset, 9 + offset, 10 + offset, 8 + offset, 10 + offset, 11 + offset, //rightdown
+      12 + offset, 14 + offset, 13 + offset, 12 + offset, 15 + offset, 14 + offset); //leftdown
+    offset += 16;
+    indices.push(0 + offset, 1 + offset, 2 + offset, 
+                0 + offset, 2 + offset, 3 + offset, 
+                0 + offset, 3 + offset, 4 + offset, 
+                0 + offset, 4 + offset, 5 + offset);
+    offset += 6;
+    indices.push(0 + offset, 2 + offset, 1 + offset, 
+                0 + offset, 3 + offset, 2 + offset, 
+                0 + offset, 4 + offset, 3 + offset, 
+                0 + offset, 5 + offset, 4 + offset);
+    offset += 6;
+    indices.push(0 + offset, 2 + offset, 1 + offset, 
+                1 + offset, 2 + offset, 3 + offset);
+
+    offset += 4;
+    indices.push(0 + offset, 1 + offset, 2 + offset, 
+                1 + offset, 3 + offset, 2 + offset);
+
+    //up
+    var upfront =  vec4.fromValues(0.0, 1.0, 1.0, 1.0);
+    vec4.transformMat4(upfront, upfront, transformMatrix);
+    var upback =  vec4.fromValues(0.0, 1.0, -1.0, 1.0);
+    vec4.transformMat4(upback, upback, transformMatrix);
+
+    //right
+    var rightback = vec4.fromValues(1.0, -1.0, -1.0, 1.0);
+    vec4.transformMat4(rightback, rightback, transformMatrix);
+    var rightfront = vec4.fromValues(1.0, -1.0, 1.0, 1.0);
+    vec4.transformMat4(rightfront, rightfront, transformMatrix);
+
+    //left
+    var leftback = vec4.fromValues(-1.0, -1.0, -1.0, 1.0);
+    vec4.transformMat4(leftback, leftback, transformMatrix);
+    var leftfront = vec4.fromValues(-1.0, -1.0, 1.0, 1.0);
+    vec4.transformMat4(leftfront, leftfront, transformMatrix);
+
+    var vector = vec4.create();
+
+    //normal
+    //roofrightup
     vector = vec4.fromValues(1, 1, 0, 0);
     vec4.normalize(vector, vector);
     vec4.transformMat4(vector, vector, inverseTransformMatrix);//right
     this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
-  
-    vec4.transformMat4(vector, vec4.fromValues(0, 0, -1, 0), inverseTransformMatrix);//back
-    this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
-  
+
+    //roofleftup
     vector = vec4.fromValues(-1, 1, 0, 0);
     vec4.normalize(vector, vector);
     vec4.transformMat4(vector, vector, inverseTransformMatrix);//left
     this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
+
+    //roofrightdown
+    vector = vec4.fromValues(-1, -1, 0, 0);
+    vec4.normalize(vector, vector);
+    vec4.transformMat4(vector, vector, inverseTransformMatrix);//right
+    this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
+
+    //roofleftdown
+    vector = vec4.fromValues(1, -1, 0, 0);
+    vec4.normalize(vector, vector);
+    vec4.transformMat4(vector, vector, inverseTransformMatrix);//right
+    this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
+
+    //front 6 times
+    vec4.transformMat4(vector, vec4.fromValues(0, 0, 1, 0), inverseTransformMatrix);
+    this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); 
+    this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
+
+    //back 6 times
+    vec4.transformMat4(vector, vec4.fromValues(0, 0, -1, 0), inverseTransformMatrix);
+    this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
+    this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
+
+    //right 4 times
+    vec4.transformMat4(vector, vec4.fromValues(1, 0, 0, 0), inverseTransformMatrix);
+    this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector);
+    
+    //left 4 times
+    vec4.transformMat4(vector, vec4.fromValues(-1, 0, 0, 0), inverseTransformMatrix);
+    this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); this.pushnormal(normals, vector); 
   
     //pos
+    var upfrontoffset = vec4.fromValues(0.0, scalingVector2[1], scalingVector2[2], 0.0);
+    vec4.transformMat4(upfrontoffset, upfrontoffset, rotationMatrix);
+    var upbackoffset = vec4.fromValues(0.0, scalingVector2[1], -scalingVector2[2], 0.0);
+    vec4.transformMat4(upbackoffset, upbackoffset, rotationMatrix);
+    var rightdownfront = vec4.fromValues(scalingVector2[0], scalingVector2[1] - scalingVector[1]*2/scalingVector[0]*scalingVector2[0], scalingVector2[2], 0.0);
+    vec4.transformMat4(rightdownfront, rightdownfront, rotationMatrix);
+    var rightdownback = vec4.fromValues(scalingVector2[0], scalingVector2[1] - scalingVector[1]*2/scalingVector[0]*scalingVector2[0], -scalingVector2[2], 0.0);
+    vec4.transformMat4(rightdownback, rightdownback, rotationMatrix);
+    var leftdownfront = vec4.fromValues(-scalingVector2[0], scalingVector2[1] - scalingVector[1]*2/scalingVector[0]*scalingVector2[0], scalingVector2[2], 0.0);
+    vec4.transformMat4(leftdownfront, leftdownfront, rotationMatrix);
+    var leftdownback = vec4.fromValues(-scalingVector2[0], scalingVector2[1] - scalingVector[1]*2/scalingVector[0]*scalingVector2[0], -scalingVector2[2], 0.0);
+    vec4.transformMat4(leftdownback, leftdownback, rotationMatrix);
     var vector2 = vec4.create();
-      
-    vec4.transformMat4(vector2, vec4.fromValues(-1.0, -1.0, -1.0, 1.0), transformMatrix);//buttom
-    this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(1.0, -1.0, -1.0, 1.0), transformMatrix);
-    this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(1.0, -1.0, 1.0, 1.0), transformMatrix);
-    this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(-1.0, -1.0, 1.0, 1.0), transformMatrix);
-    this.pushposition(positions, vector2);    
 
-    vec4.transformMat4(vector2, vec4.fromValues(-1.0, -1.0, 1.0, 1.0), transformMatrix);//front
+    //right
+    vec4.add(vector2, upfront, upfrontoffset);
     this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(1.0, -1.0, 1.0, 1.0), transformMatrix);
+    vec4.add(vector2, upback, upbackoffset);
     this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(0.0, 1.0, 1.0, 1.0), transformMatrix);
+    vec4.add(vector2, rightback, rightdownback);
     this.pushposition(positions, vector2);
-  
-    vec4.transformMat4(vector2, vec4.fromValues(0.0, 1.0, 1.0, 1.0), transformMatrix);//right
-    this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(0.0, 1.0, -1.0, 1.0), transformMatrix);
-    this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(1.0, -1.0, -1.0, 1.0), transformMatrix);
-    this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(1.0, -1.0, 1.0, 1.0), transformMatrix);
-    this.pushposition(positions, vector2);
-  
-    vec4.transformMat4(vector2, vec4.fromValues(-1.0, -1.0, -1.0, 1.0), transformMatrix);//back
-    this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(1.0, -1.0, -1.0, 1.0), transformMatrix);
-    this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(0.0, 1.0, -1.0, 1.0), transformMatrix);
-    this.pushposition(positions, vector2);
-  
-    vec4.transformMat4(vector2, vec4.fromValues(-1.0, -1.0, -1.0, 1.0), transformMatrix);//left
-    this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(-1.0, -1.0, 1.0, 1.0), transformMatrix);
-    this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(0.0, 1.0, 1.0, 1.0), transformMatrix);
-    this.pushposition(positions, vector2);
-    vec4.transformMat4(vector2, vec4.fromValues(0.0, 1.0, -1.0, 1.0), transformMatrix);
+    vec4.add(vector2, rightfront, rightdownfront);
     this.pushposition(positions, vector2);
 
+    //left
+    vec4.add(vector2, leftback, leftdownback);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, leftfront, leftdownfront);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, upfront, upfrontoffset);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, upback, upbackoffset);
+    this.pushposition(positions, vector2);
+
+    var upfrontoffset2 = vec4.fromValues(0.0, 0.0, scalingVector2[2], 0.0);
+    vec4.transformMat4(upfrontoffset2, upfrontoffset2, rotationMatrix);
+    var upbackoffset2 = vec4.fromValues(0.0, 0.0, -scalingVector2[2], 0.0);
+    vec4.transformMat4(upbackoffset2, upbackoffset2, rotationMatrix);
+    var rightdownfront2 = vec4.fromValues(scalingVector2[0], - scalingVector[1]*2/scalingVector[0]*scalingVector2[0], scalingVector2[2], 0.0);
+    vec4.transformMat4(rightdownfront2, rightdownfront2, rotationMatrix);
+    var rightdownback2 = vec4.fromValues(scalingVector2[0], - scalingVector[1]*2/scalingVector[0]*scalingVector2[0], -scalingVector2[2], 0.0);
+    vec4.transformMat4(rightdownback2, rightdownback2, rotationMatrix);
+    var leftdownfront2 = vec4.fromValues(-scalingVector2[0], - scalingVector[1]*2/scalingVector[0]*scalingVector2[0], scalingVector2[2], 0.0);
+    vec4.transformMat4(leftdownfront2, leftdownfront2, rotationMatrix);
+    var leftdownback2 = vec4.fromValues(-scalingVector2[0], - scalingVector[1]*2/scalingVector[0]*scalingVector2[0], -scalingVector2[2], 0.0);
+    vec4.transformMat4(leftdownback2, leftdownback2, rotationMatrix);
+
+    //rightdown
+    vec4.add(vector2, upfront, upfrontoffset2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, upback, upbackoffset2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, rightback, rightdownback2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, rightfront, rightdownfront2);
+    this.pushposition(positions, vector2);
+
+    //leftdown
+    vec4.add(vector2, leftback, leftdownback2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, leftfront, leftdownfront2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, upfront, upfrontoffset2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, upback, upbackoffset2);
+    this.pushposition(positions, vector2);
+
+    //front
+    vec4.add(vector2, upfront, upfrontoffset);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, leftfront, leftdownfront);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, leftfront, leftdownfront2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, upfront, upfrontoffset2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, rightfront, rightdownfront2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, rightfront, rightdownfront);
+    this.pushposition(positions, vector2);
+
+    //back
+    vec4.add(vector2, upback, upbackoffset);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, leftback, leftdownback);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, leftback, leftdownback2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, upback, upbackoffset2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, rightback, rightdownback2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, rightback, rightdownback);
+    this.pushposition(positions, vector2);
+
+    //right
+    vec4.add(vector2, rightfront, rightdownfront2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, rightfront, rightdownfront);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, rightback, rightdownback2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, rightback, rightdownback);
+    this.pushposition(positions, vector2);
+
+    //left
+    vec4.add(vector2, leftfront, leftdownfront2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, leftfront, leftdownfront);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, leftback, leftdownback2);
+    this.pushposition(positions, vector2);
+    vec4.add(vector2, leftback, leftdownback);
+    this.pushposition(positions, vector2);
   }
 
   createcube(indices: number[], positions: number[], normals: number[], scalingVector: vec3, translationVector: vec3)
@@ -363,7 +490,21 @@ class Cube extends Drawable {
         this.createcube(indices, positions, normals, scalingVector, translationVector);
         scalingVector[1] *= Math.random() * 0.25 + 0.25;
         translationVector[1] += tempsection.halfheight + scalingVector[1];
-        this.createtriangularprism(indices, positions, normals, scalingVector, translationVector);
+        var scalingVector2 = vec3.fromValues(0.1, 0.1, 0.1);
+        
+        var randomint = this.getRandomInt(0, 2);
+        if(randomint==1)
+        {
+          let temp = scalingVector[0];
+          scalingVector[0] = scalingVector[2];
+          scalingVector[2] = temp;
+          temp = scalingVector2[0];
+          scalingVector2[0] = scalingVector2[2];
+          scalingVector2[2] = temp;
+        }
+
+        this.createtriangularprism(indices, positions, normals, scalingVector, translationVector, randomint);
+        this.createtriangularroof(indices, positions, normals, scalingVector, translationVector, scalingVector2, randomint);
         if(Math.random()>randomness && tempsection.right)
         {
           let temphalfdepth = Math.random() * 0.5 * tempsection.halfdepth + 0.25 * tempsection.halfdepth;
@@ -479,11 +620,11 @@ class Cube extends Drawable {
   var sections = new Array<Section>();
   var allsections = new Array<Section>();
 
-  var halfrange = 50;
+  var halfrange = 80;
 
-  for(let i = -halfrange; i < halfrange; i+=2)
+  for(let i = -halfrange; i < halfrange; i+=2.5)
   {
-    for(let j = -halfrange; j < halfrange; j+=2)
+    for(let j = -halfrange; j < halfrange; j+=2.5)
     {
       var boundx = 1.0;
       var boundy = 1.0;
@@ -508,6 +649,13 @@ class Cube extends Drawable {
       this.createcubes(indices, positions, normals, iteration, sections, allsections, moveup, randomness, boundx, boundy, boundz, i, j);
     }
   }
+
+  // var scalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+  // var translationVector = vec3.fromValues(1.0, 1.0, 1.0);
+  // var scalingVector2 = vec3.fromValues(0.5, 0.5, 0.5);
+
+  // this.createtriangularprism(indices, positions, normals, scalingVector, translationVector, 1);
+  // this.createtriangularroof(indices, positions, normals, scalingVector, translationVector, scalingVector2, 1);
 
   this.indices = new Uint32Array(indices);
   this.positions = new Float32Array(positions);

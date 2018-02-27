@@ -18,9 +18,20 @@ uniform vec4 u_Color; // The color with which to render this instance of geometr
 in vec4 fs_Nor;
 in vec4 fs_LightVec;
 in vec4 fs_Col;
-
+in float fs_DistoCam;
 out vec4 out_Col; // This is the final output color that you will see on your
                   // screen for the pixel that is currently being processed.
+vec4 fogColor = vec4(0.9, 0.9, 0.85, 1.0);
+const float fogdensity = .0005;
+
+vec3 applyFog( in vec3  rgb,       // original color of the pixel
+               in float distance ) // camera to point distance
+{
+    float b = 0.01;
+    float fogAmount = 1.0 - exp( -distance*b );
+    vec3  fogColor  = vec3(0.9, 0.9, 0.85);
+    return mix( rgb, fogColor, fogAmount );
+}
 
 void main()
 {
@@ -37,7 +48,10 @@ void main()
         float lightIntensity = diffuseTerm + ambientTerm;   //Add a small float value to the color multiplier
                                                             //to simulate ambient lighting. This ensures that faces that are not
                                                             //lit by our point light are not completely black.
+        float z = gl_FragCoord.z / gl_FragCoord.w;
+        float fog = clamp(exp(-fogdensity * z * z), 0.2, 1.0);
 
         // Compute final shaded color
         out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
+        out_Col =  mix(fogColor, out_Col, fog); 
 }

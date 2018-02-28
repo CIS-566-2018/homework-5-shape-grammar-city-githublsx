@@ -505,7 +505,7 @@ class Cube extends Drawable {
 
         this.createtriangularprism(indices, positions, normals, scalingVector, translationVector, randomint);
         this.createtriangularroof(indices, positions, normals, scalingVector, translationVector, scalingVector2, randomint);
-        if(Math.random()>randomness && tempsection.right)
+        if(Math.random()<randomness && tempsection.right)
         {
           let temphalfdepth = Math.random() * 0.5 * tempsection.halfdepth + 0.25 * tempsection.halfdepth;
           let temphalfheight = Math.random() * 0.5 * tempsection.halfheight + 0.25 * tempsection.halfheight;
@@ -526,7 +526,7 @@ class Cube extends Drawable {
           tempsection.right = false;
         }
   
-        if(Math.random()>randomness && tempsection.left)
+        if(Math.random()<randomness && tempsection.left)
         {
           let temphalfdepth = Math.random() * 0.5 * tempsection.halfdepth + 0.25 * tempsection.halfdepth;
           let temphalfheight = Math.random() * 0.5 * tempsection.halfheight + 0.25 * tempsection.halfheight;
@@ -547,7 +547,7 @@ class Cube extends Drawable {
           tempsection.left = false;
         }
   
-        if(Math.random()>randomness && tempsection.front)
+        if(Math.random()<randomness && tempsection.front)
         {
           let temphalfdepth = Math.random() * 0.5 * tempsection.halfdepth + 0.25 * tempsection.halfdepth;
           let temphalfheight = Math.random() * 0.5 * tempsection.halfheight + 0.25 * tempsection.halfheight;
@@ -568,7 +568,7 @@ class Cube extends Drawable {
           tempsection.front = false;
         }
   
-        if(Math.random()>randomness && tempsection.back)
+        if(Math.random()<randomness && tempsection.back)
         {
           let temphalfdepth = Math.random() * 0.5 * tempsection.halfdepth + 0.25 * tempsection.halfdepth;
           let temphalfheight = Math.random() * 0.5 * tempsection.halfheight + 0.25 * tempsection.halfheight;
@@ -589,7 +589,7 @@ class Cube extends Drawable {
           tempsection.back = false;
         }
   
-        if(Math.random()>randomness && tempsection.up)
+        if(Math.random()<randomness && tempsection.up)
         {
           let temphalfdepth = Math.random() * 0.5 * tempsection.halfdepth + 0.25 * tempsection.halfdepth;
           let temphalfheight = Math.random() * 0.5 * tempsection.halfheight + 0.25 * tempsection.halfheight;
@@ -622,9 +622,9 @@ class Cube extends Drawable {
 
   var halfrange = 80;
 
-  for(let i = -halfrange; i < halfrange; i+=2.5)
+  for(let i = -halfrange; i < halfrange; i+=2.0)
   {
-    for(let j = -halfrange; j < halfrange; j+=2.5)
+    for(let j = -halfrange; j < halfrange; j+=2.0)
     {
       var boundx = 1.0;
       var boundy = 1.0;
@@ -636,9 +636,12 @@ class Cube extends Drawable {
       var halfheight = (Math.random() * 0.25 + 0.5) * boundy; // Y
       var halfdepth = (Math.random() * 0.25 + 0.5) * boundz;  // Z
     
-      var randomness = 0.2;
+      var randomness = 0.8;
+
+      var bigi = i + Math.random()-0.5;
+      var bigj = j + Math.random()-0.5;
     
-      var root = new Section(halfweight, halfheight, halfdepth, i, 0, j);
+      var root = new Section(halfweight, halfheight, halfdepth, bigi, 0, bigj);
       var moveup = halfheight;
     
       sections = [];
@@ -646,7 +649,7 @@ class Cube extends Drawable {
     
       var scalingVector = vec3.fromValues(1.0, 1.0, 1.0);
       var translationVector = vec3.fromValues(0.0, 0.0, 0.0);
-      this.createcubes(indices, positions, normals, iteration, sections, allsections, moveup, randomness, boundx, boundy, boundz, i, j);
+      this.createcubes(indices, positions, normals, iteration, sections, allsections, moveup, randomness, boundx, boundy, boundz, bigi, bigj);
     }
   }
 

@@ -1,7 +1,17 @@
-import {vec3, vec4, mat4} from 'gl-matrix';
+import {vec2, vec3, vec4, mat4} from 'gl-matrix';
 import Drawable from '../rendering/gl/Drawable';
 import {gl} from '../globals';
 import * as OBJLOADER from 'webgl-obj-loader';
+
+class Symbol{
+  mark: number;
+  randomness: number;
+  constructor(mark: number, randomness: number)
+  {
+    this.mark = mark;
+    this.randomness = randomness;
+  }
+}
 
 class Section{
   halfweight: number;
@@ -21,6 +31,8 @@ class Section{
   frontgenerated: boolean = false; 
   backgenerated: boolean = false; 
   upgenerated: boolean = false; 
+  isroot: boolean = false;
+  intobaclony: boolean = false;
 
 
   constructor(halfweight: number = 1.0, halfheight: number = 1.0, halfdepth: number = 1.0,
@@ -531,9 +543,13 @@ class Cube extends Drawable {
     boundx: number, boundy: number, boundz: number,
     bigi: number, bigj: number, rad: number)
   {
-    var supportstep = 0.125;
+    var supportstep = 0.15;
     var supportwidth = 0.01;
-    var roofthickness = 0.08;
+    var roofthickness = 0.07;
+    var balconyrailingheight = 0.1;
+    var offsetforgeneration = 0.05;
+    var randomness2 = 0.5;//transform into balcony
+    var randomness3 = 0.5;//after transform into balcony, got a prism or not
 
     for(let i = 0; i < iteration; i++)
     {
@@ -544,7 +560,8 @@ class Cube extends Drawable {
         var tempsection = sections.shift();
         var scalingVector = vec3.fromValues(tempsection.halfweight, tempsection.halfheight, tempsection.halfdepth);
         var translationVector = vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup, tempsection.translatedepth);
-        this.createcube(indices, positions, normals, scalingVector, translationVector, rad);
+        
+        //roof scaling and translation
         scalingVector[1] *= Math.random() * 0.25 + 0.25;
         var translationVector2 = translationVector;
         translationVector2[1] += tempsection.halfheight + scalingVector[1];
@@ -561,9 +578,51 @@ class Cube extends Drawable {
           scalingVector2[2] = temp;
         }
 
-        //create roof
-        this.createtriangularprism(indices, positions, normals, scalingVector, translationVector2, rad + randomint * Math.PI * 0.5);
-        this.createtriangularroof(indices, positions, normals, scalingVector, translationVector2, scalingVector2, rad + randomint * Math.PI * 0.5);
+        //transform it into balcony
+        //balconyrailingheight < tempsection.halfheight
+        if(!tempsection.isroot && balconyrailingheight < tempsection.halfheight && Math.random()<randomness2)
+        {
+          //is a balcony
+          tempsection.intobaclony = true;
+          
+          //create roof
+          this.createtriangularroof(indices, positions, normals, scalingVector, translationVector2, scalingVector2, rad + randomint * Math.PI * 0.5);
+
+          //create prism
+          if(Math.random()<randomness3)
+          {
+            this.createtriangularprism(indices, positions, normals, scalingVector, translationVector2, rad + randomint * Math.PI * 0.5);
+          }
+
+          //create railing
+          var ratio = scalingVector[1] / scalingVector[0];
+          var offset = roofthickness * 2 * ratio;
+          var railingscalingVector = vec3.fromValues(tempsection.halfweight, balconyrailingheight, tempsection.halfdepth);
+          var railingtranslationVector = vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup - (tempsection.halfheight - balconyrailingheight), tempsection.translatedepth);
+          this.createcube(indices, positions, normals, railingscalingVector, railingtranslationVector, rad);
+
+          //railngpillars
+          var pillarscalingVector = vec3.fromValues(supportwidth, tempsection.halfheight + 1 / 2 * offset, supportwidth);
+          var pillartranslationVector = vec3.fromValues(tempsection.translateweight - tempsection.halfweight + roofthickness, tempsection.translateheight + moveup + 1 / 2 * offset, tempsection.translatedepth - tempsection.halfdepth + roofthickness);
+          this.createcube(indices, positions, normals, pillarscalingVector, pillartranslationVector, rad);
+          pillartranslationVector = vec3.fromValues(tempsection.translateweight + tempsection.halfweight - roofthickness, tempsection.translateheight + moveup + 1 / 2 * offset, tempsection.translatedepth - tempsection.halfdepth + roofthickness);
+          this.createcube(indices, positions, normals, pillarscalingVector, pillartranslationVector, rad);
+          pillartranslationVector = vec3.fromValues(tempsection.translateweight - tempsection.halfweight + roofthickness, tempsection.translateheight + moveup + 1 / 2 * offset, tempsection.translatedepth + tempsection.halfdepth - roofthickness);
+          this.createcube(indices, positions, normals, pillarscalingVector, pillartranslationVector, rad);
+          pillartranslationVector = vec3.fromValues(tempsection.translateweight + tempsection.halfweight - roofthickness, tempsection.translateheight + moveup + 1 / 2 * offset, tempsection.translatedepth + tempsection.halfdepth - roofthickness);
+          this.createcube(indices, positions, normals, pillarscalingVector, pillartranslationVector, rad);
+        }
+        else
+        {
+          //create roof
+          this.createtriangularroof(indices, positions, normals, scalingVector, translationVector2, scalingVector2, rad + randomint * Math.PI * 0.5);
+          this.createtriangularprism(indices, positions, normals, scalingVector, translationVector2, rad + randomint * Math.PI * 0.5);
+
+          //create cube
+          this.createcube(indices, positions, normals, vec3.fromValues(tempsection.halfweight, tempsection.halfheight, tempsection.halfdepth), 
+          vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup, tempsection.translatedepth), rad);
+        }
+
 
         var eavetranslationVector = vec3.fromValues(translationVector2[0], translationVector2[1], translationVector2[2]);
         //add eave
@@ -593,7 +652,12 @@ class Cube extends Drawable {
         //create support
         if(tempsection.rightgenerated)
         {
-          for(var index = -tempsection.halfdepth; index <= tempsection.halfdepth; index += supportstep)
+          let widescalingVector = vec3.fromValues(tempsection.halfweight + roofthickness, roofthickness / 2.0, tempsection.halfdepth + roofthickness);
+          let widetranslationVector = vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup - tempsection.halfheight, tempsection.translatedepth);
+          this.createcube(indices, positions, normals, widescalingVector, widetranslationVector, rad);
+          var numofsupports = Math.floor(tempsection.halfdepth * 2 / supportstep);
+          var newsupportstep = tempsection.halfdepth * 2 / numofsupports;
+          for(var index = -tempsection.halfdepth; index <= tempsection.halfdepth; index += newsupportstep)
           {
             var xdist = tempsection.halfweight - supportwidth * 2.0;
             var ydist = -((tempsection.translateheight + moveup - tempsection.halfheight) * 0.5 + tempsection.halfheight);
@@ -607,7 +671,12 @@ class Cube extends Drawable {
 
         if(tempsection.leftgenerated)
         {
-          for(var index = -tempsection.halfdepth; index <= tempsection.halfdepth; index += supportstep)
+          let widescalingVector = vec3.fromValues(tempsection.halfweight + roofthickness, roofthickness / 2.0, tempsection.halfdepth + roofthickness);
+          let widetranslationVector = vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup - tempsection.halfheight, tempsection.translatedepth);
+          this.createcube(indices, positions, normals, widescalingVector, widetranslationVector, rad);
+          var numofsupports = Math.floor(tempsection.halfdepth * 2 / supportstep);
+          var newsupportstep = tempsection.halfdepth * 2 / numofsupports;
+          for(var index = -tempsection.halfdepth; index <= tempsection.halfdepth; index += newsupportstep)
           {
             var xdist = - tempsection.halfweight + supportwidth * 2.0;
             var ydist = -((tempsection.translateheight + moveup - tempsection.halfheight) * 0.5 + tempsection.halfheight);
@@ -621,7 +690,12 @@ class Cube extends Drawable {
 
         if(tempsection.frontgenerated)
         {
-          for(var index = -tempsection.halfweight; index <= tempsection.halfweight; index += supportstep)
+          let widescalingVector = vec3.fromValues(tempsection.halfweight + roofthickness, roofthickness / 2.0, tempsection.halfdepth + roofthickness);
+          let widetranslationVector = vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup - tempsection.halfheight, tempsection.translatedepth);
+          this.createcube(indices, positions, normals, widescalingVector, widetranslationVector, rad);
+          var numofsupports = Math.floor(tempsection.halfweight * 2 / supportstep);
+          var newsupportstep = tempsection.halfweight * 2 / numofsupports;
+          for(var index = -tempsection.halfweight; index <= tempsection.halfweight; index += newsupportstep)
           {
             var xdist = index;
             var ydist = -((tempsection.translateheight + moveup - tempsection.halfheight) * 0.5 + tempsection.halfheight);
@@ -635,7 +709,12 @@ class Cube extends Drawable {
 
         if(tempsection.backgenerated)
         {
-          for(var index = -tempsection.halfweight; index <= tempsection.halfweight; index += supportstep)
+          let widescalingVector = vec3.fromValues(tempsection.halfweight + roofthickness, roofthickness / 2.0, tempsection.halfdepth + roofthickness);
+          let widetranslationVector = vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup - tempsection.halfheight, tempsection.translatedepth);
+          this.createcube(indices, positions, normals, widescalingVector, widetranslationVector, rad);
+          var numofsupports = Math.floor(tempsection.halfweight * 2 / supportstep);
+          var newsupportstep = tempsection.halfweight * 2 / numofsupports;
+          for(var index = -tempsection.halfweight; index <= tempsection.halfweight; index += newsupportstep)
           {
             var xdist = index;
             var ydist = -((tempsection.translateheight + moveup - tempsection.halfheight) * 0.5 + tempsection.halfheight);
@@ -647,8 +726,8 @@ class Cube extends Drawable {
           }
         }
 
-        //Add attachment
-        if(Math.random()<randomness && tempsection.right)
+        //Add attachment, not a baclony
+        if(Math.random()<randomness && tempsection.right && !tempsection.intobaclony)
         {
           let temphalfdepth = Math.random() * 0.5 * tempsection.halfdepth + 0.25 * tempsection.halfdepth;
           let temphalfheight = Math.random() * 0.5 * tempsection.halfheight + 0.25 * tempsection.halfheight;
@@ -660,7 +739,7 @@ class Cube extends Drawable {
           let htrans = Math.random() * rangehtrans * 2.0 - rangehtrans;
           let tempsection2 = new Section(temphalfweight, temphalfheight, temphalfdepth, 
                                              tempsection.translateweight + tempsection.halfweight, tempsection.translateheight + htrans, tempsection.translatedepth + dtrans);
-          if(temphalfweight==boundx - (tempsection.translateweight + tempsection.halfweight))
+          if(temphalfweight==boundx + bigi - (tempsection.translateweight + tempsection.halfweight))
           {
             tempsection2.right = false;
           }
@@ -670,7 +749,7 @@ class Cube extends Drawable {
           tempsection.right = false;
         }
   
-        if(Math.random()<randomness && tempsection.left)
+        if(Math.random()<randomness && tempsection.left && !tempsection.intobaclony)
         {
           let temphalfdepth = Math.random() * 0.5 * tempsection.halfdepth + 0.25 * tempsection.halfdepth;
           let temphalfheight = Math.random() * 0.5 * tempsection.halfheight + 0.25 * tempsection.halfheight;
@@ -682,7 +761,7 @@ class Cube extends Drawable {
           let htrans = Math.random() * rangehtrans * 2.0 - rangehtrans;
           let tempsection2 = new Section(temphalfweight, temphalfheight, temphalfdepth, 
                                              tempsection.translateweight - tempsection.halfweight, tempsection.translateheight + htrans, tempsection.translatedepth + dtrans);
-          if(temphalfweight==boundx - (tempsection.translateweight + tempsection.halfweight))
+          if(temphalfweight==boundx + bigi - (tempsection.translateweight + tempsection.halfweight))
           {
             tempsection2.left = false;
           }
@@ -692,7 +771,7 @@ class Cube extends Drawable {
           tempsection.left = false;
         }
   
-        if(Math.random()<randomness && tempsection.front)
+        if(Math.random()<randomness && tempsection.front && !tempsection.intobaclony)
         {
           let temphalfdepth = Math.random() * 0.5 * tempsection.halfdepth + 0.25 * tempsection.halfdepth;
           let temphalfheight = Math.random() * 0.5 * tempsection.halfheight + 0.25 * tempsection.halfheight;
@@ -704,7 +783,7 @@ class Cube extends Drawable {
           let htrans = Math.random() * rangehtrans * 2.0 - rangehtrans;
           let tempsection2 = new Section(temphalfweight, temphalfheight, temphalfdepth, 
                                              tempsection.translateweight + wtrans, tempsection.translateheight + htrans, tempsection.translatedepth + tempsection.halfdepth);
-          if(temphalfdepth==boundz - (tempsection.translatedepth + tempsection.halfdepth))
+          if(temphalfdepth==boundz + bigj - (tempsection.translatedepth + tempsection.halfdepth))
           {
             tempsection2.front = false;
           }
@@ -714,7 +793,7 @@ class Cube extends Drawable {
           tempsection.front = false;
         }
   
-        if(Math.random()<randomness && tempsection.back)
+        if(Math.random()<randomness && tempsection.back && !tempsection.intobaclony)
         {
           let temphalfdepth = Math.random() * 0.5 * tempsection.halfdepth + 0.25 * tempsection.halfdepth;
           let temphalfheight = Math.random() * 0.5 * tempsection.halfheight + 0.25 * tempsection.halfheight;
@@ -726,7 +805,7 @@ class Cube extends Drawable {
           let htrans = Math.random() * rangehtrans * 2.0 - rangehtrans;
           let tempsection2 = new Section(temphalfweight, temphalfheight, temphalfdepth, 
                                              tempsection.translateweight + wtrans, tempsection.translateheight + htrans, tempsection.translatedepth - tempsection.halfdepth);
-          if(temphalfdepth==boundz - (tempsection.translatedepth + tempsection.halfdepth))
+          if(temphalfdepth==boundz + bigj - (tempsection.translatedepth + tempsection.halfdepth))
           {
             tempsection2.back = false;
           }
@@ -736,7 +815,7 @@ class Cube extends Drawable {
           tempsection.back = false;
         }
   
-        if(Math.random()<randomness && tempsection.up)
+        if(Math.random()<randomness && tempsection.up && !tempsection.intobaclony)
         {
           let temphalfdepth = Math.random() * 0.5 * tempsection.halfdepth + 0.25 * tempsection.halfdepth;
           let temphalfheight = Math.random() * 0.5 * tempsection.halfheight + 0.25 * tempsection.halfheight;
@@ -757,6 +836,56 @@ class Cube extends Drawable {
     }
   }
 
+  fract(x: number)
+  {
+    return x - Math.floor(x);
+  }
+
+  random (st: vec2) {
+    return this.fract(Math.sin(vec2.dot(st, vec2.fromValues(12.9898,78.233)))* 43758.5453123);
+  }
+
+  mix(x: number, y: number, a: number){
+    return x * (1 - a) + y * a;
+  }
+
+  noise (st: vec2) {
+    var i = vec2.create();
+    vec2.floor(i, st);
+    var f = vec2.create();
+    vec2.subtract(f, st, i);
+
+    // Four corners in 2D of a tile
+    var a = this.random(i);
+    var b = this.random(vec2.fromValues(i[0]+1.0, i[1]));
+    var c = this.random(vec2.fromValues(i[0], i[1]+1.0));
+    var d = this.random(vec2.fromValues(i[0]+1.0, i[1]+1.0));
+
+    var u = vec2.create();
+    u = vec2.fromValues(f[0]*f[0]*(3.0-2.0*f[0]), f[1]*f[1]*(3.0-2.0*f[1]));
+
+    return this.mix(a, b, u[0]) +
+            (c - a)* u[1] * (1.0 - u[0]) +
+            (d - b) * u[0] * u[1];
+    }
+
+  fbm(st: vec2)
+  {
+      // Initial values
+      var value = 0.0;
+      var amplitude = .5;
+      var frequency = 0.;
+      var OCTAVES = 6;
+      //
+      // Loop of octaves
+      for (var i = 0; i < OCTAVES; i++) {
+          value += amplitude * this.noise(st);
+          vec2.scale(st, st, 2.0);
+          amplitude *= .5;
+      }
+      return value;  
+  }
+
   create() {
 
   //http://in2gpu.com/2015/07/09/drawing-cube-with-indices/
@@ -767,40 +896,124 @@ class Cube extends Drawable {
   var sections = new Array<Section>();
   var allsections = new Array<Section>();
 
-  var halfrange = 50;
+  //var halfrange = 50;
+  var step = 2.5;
+  var totalnumber = 50;
+  var halfrange = totalnumber * step / 2.0;
+  var scaleofnoise = 5.0;
 
-  for(let i = -halfrange; i < halfrange; i+=2.5)
+  console.log(totalnumber);
+
+  var symbols = new Array<Array<Symbol>>();
+  for(let i = 0; i < totalnumber; i++)
   {
-    for(let j = -halfrange; j < halfrange; j+=2.5)
+    symbols.push([]);
+    for(let j = 0; j < totalnumber; j++)
     {
-      var boundx = 1.0;
-      var boundy = 1.0;
-      var boundz = 1.0;
-    
-      var iteration = 2.0;
-    
-      var halfweight = (Math.random() * 0.25 + 0.5) * boundx; // X
-      var halfheight = (Math.random() * 0.25 + 0.5) * boundy; // Y
-      var halfdepth = (Math.random() * 0.25 + 0.5) * boundz;  // Z
-    
-      var randomness = 0.8;
-
-      var bigi = i;// + Math.random()-0.5;
-      var bigj = j;// + Math.random()-0.5;
-    
-      var root = new Section(halfweight, halfheight, halfdepth, bigi, 0, bigj);
-      var moveup = halfheight;
-    
-      sections = [];
-      sections.push(root);
-    
-      var scalingVector = vec3.fromValues(1.0, 1.0, 1.0);
-      var translationVector = vec3.fromValues(0.0, 0.0, 0.0);
-      this.createcubes(indices, positions, normals, 
-        iteration, sections, allsections, moveup, randomness, 
-        boundx, boundy, boundz, 
-        bigi, bigj, 0.0);
+      var randomnumber = 0.5 + 2.0 * this.fbm(vec2.fromValues(i/totalnumber * scaleofnoise, j/totalnumber * scaleofnoise));
+      //console.log("randomnumber" + randomnumber);
+      if(randomnumber>=0.5 && randomnumber<1.10)
+      {
+        let symbol = new Symbol(0, randomnumber);
+        symbols[i][j] = symbol;
+      }
+      else if(randomnumber>=1.10 && randomnumber<1.50)
+      {
+        let symbol = new Symbol(1, randomnumber);
+        symbols[i][j] = symbol;
+      }
+      else if(randomnumber>=1.50 && randomnumber<2.50)
+      {
+        let symbol = new Symbol(2, randomnumber);
+        symbols[i][j] = symbol;
+        if(i-1>=0 && j-1>=0 && symbols[i-1][j].mark!=-2 && symbols[i][j-1].mark!=-2 && symbols[i-1][j-1].mark!=-2)
+        {
+          symbols[i-1][j].mark = -2;
+          symbols[i-1][j].randomness = randomnumber;
+          symbols[i][j-1].mark = -2;
+          symbols[i][j-1].randomness = randomnumber;
+          symbols[i-1][j-1].mark = -2;
+          symbols[i-1][j-1].randomness = randomnumber;
+          symbols[i][j].mark = -2;
+        }
+      }
     }
+  }
+
+  for(let i = 0; -halfrange + i * 2.5 < halfrange; i++)
+  {
+    for(let j = 0; -halfrange + j * 2.5 < halfrange; j++)
+    {
+
+      //console.log("i "+i/totalnumber+ " j "+j/totalnumber);
+
+
+      if(symbols[i][j].mark == 1 || symbols[i][j].mark == 2 )
+      {
+        var bigi = -halfrange + i * 2.5 + Math.random()-0.5;
+        var bigj = -halfrange + j * 2.5 + Math.random()-0.5;
+        var boundx = 1.0;
+        var boundy = symbols[i][j].randomness;
+        var boundz = 1.0;
+      
+        var iteration = 2.0;
+      
+        var halfweight = (Math.random() * 0.25 + 0.5) * boundx; // X
+        var halfheight = (Math.random() * 0.25 + 0.5) * boundy; // Y
+        var halfdepth = (Math.random() * 0.25 + 0.5) * boundz;  // Z
+      
+        var randomness = 0.8;//for each surface, add another cube
+      
+        var root = new Section(halfweight, halfheight, halfdepth, bigi, 0, bigj);
+        root.isroot = true;
+        var moveup = halfheight;
+      
+        sections = [];
+        sections.push(root);
+      
+        var scalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+        var translationVector = vec3.fromValues(0.0, 0.0, 0.0);
+        this.createcubes(indices, positions, normals, 
+          iteration, sections, allsections, moveup, randomness, 
+          boundx, boundy, boundz, 
+          bigi, bigj, 0.0);
+      }
+      else if(symbols[i][j].mark == -2)
+      {
+        symbols[i+1][j].mark = 0;
+        symbols[i][j+1].mark = 0;
+        symbols[i+1][j+1].mark = 0;
+
+        var bigi = -halfrange + (i+0.5) * 2.5;
+        var bigj = -halfrange + (j+0.5) * 2.5;
+        var boundx = 2.0;
+        var boundy = symbols[i][j].randomness * 1.5;
+        var boundz = 2.0;
+      
+        var iteration = 3.0;
+      
+        var halfweight = (Math.random() * 0.25 + 0.5) * boundx; // X
+        var halfheight = (Math.random() * 0.25 + 0.5) * boundy; // Y
+        var halfdepth = (Math.random() * 0.25 + 0.5) * boundz;  // Z
+      
+        var randomness = 0.8;//for each surface, add another cube
+      
+        var root = new Section(halfweight, halfheight, halfdepth, bigi, 0, bigj);
+        root.isroot = true;
+        var moveup = halfheight;
+      
+        sections = [];
+        sections.push(root);
+      
+        var scalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+        var translationVector = vec3.fromValues(0.0, 0.0, 0.0);
+        this.createcubes(indices, positions, normals, 
+          iteration, sections, allsections, moveup, randomness, 
+          boundx, boundy, boundz, 
+          bigi, bigj, 0.0);
+      }
+    }
+
   }
 
   //  var scalingVector = vec3.fromValues(1.0, 1.0, 1.0);

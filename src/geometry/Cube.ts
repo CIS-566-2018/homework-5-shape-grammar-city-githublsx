@@ -60,13 +60,14 @@ class Cube extends Drawable {
     return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
   }
 
-  createtriangularprism(indices: number[], positions: number[], normals: number[], scalingVector: vec3, translationVector: vec3, rotate: number)
+  createtriangularprism(indices: number[], positions: number[], normals: number[], 
+    scalingVector: vec3, translationVector: vec3, rotate: number, rad: number)
   {
     var translationMatrix = mat4.create();
     mat4.fromTranslation(translationMatrix, translationVector);
     var rotationMatrix = mat4.create();
     
-    mat4.fromYRotation(rotationMatrix, rotate * Math.PI * 0.5);
+    mat4.fromYRotation(rotationMatrix, rotate * Math.PI * 0.5 + rad);
     var scaleMatrix = mat4.create();
     mat4.fromScaling(scaleMatrix, scalingVector);
   
@@ -151,13 +152,15 @@ class Cube extends Drawable {
 
   }
 
-  createtriangularroof(indices: number[], positions: number[], normals: number[], scalingVector: vec3, translationVector: vec3, scalingVector2: vec3, rotate: number)
+  createtriangularroof(indices: number[], positions: number[], normals: number[], 
+    scalingVector: vec3, translationVector: vec3, scalingVector2: vec3, 
+    rotate: number, rad: number)
   {
     var translationMatrix = mat4.create();
     mat4.fromTranslation(translationMatrix, translationVector);
     var rotationMatrix = mat4.create();
     
-    mat4.fromYRotation(rotationMatrix, rotate * Math.PI * 0.5);
+    mat4.fromYRotation(rotationMatrix, rotate * Math.PI * 0.5 + rad);
     var scaleMatrix = mat4.create();
     mat4.fromScaling(scaleMatrix, scalingVector);
   
@@ -373,11 +376,12 @@ class Cube extends Drawable {
     this.pushposition(positions, vector2);
   }
 
-  createcube(indices: number[], positions: number[], normals: number[], scalingVector: vec3, translationVector: vec3)
+  createcube(indices: number[], positions: number[], normals: number[], scalingVector: vec3, translationVector: vec3, rad: number)
   {
     var translationMatrix = mat4.create();
     mat4.fromTranslation(translationMatrix, translationVector);
     var rotationMatrix = mat4.create();
+    mat4.fromYRotation(rotationMatrix, rad);
     var scaleMatrix = mat4.create();
     mat4.fromScaling(scaleMatrix, scalingVector);
   
@@ -477,7 +481,7 @@ class Cube extends Drawable {
     sections: Section[], allsections: Section[],
     moveup: number, randomness: number, 
     boundx: number, boundy: number, boundz: number,
-    bigi: number, bigj: number)
+    bigi: number, bigj: number, rad: number)
   {
     for(let i = 0; i < iteration; i++)
     {
@@ -487,7 +491,7 @@ class Cube extends Drawable {
         var tempsection = sections.shift();
         var scalingVector = vec3.fromValues(tempsection.halfweight, tempsection.halfheight, tempsection.halfdepth);
         var translationVector = vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup, tempsection.translatedepth);
-        this.createcube(indices, positions, normals, scalingVector, translationVector);
+        this.createcube(indices, positions, normals, scalingVector, translationVector, rad);
         scalingVector[1] *= Math.random() * 0.25 + 0.25;
         translationVector[1] += tempsection.halfheight + scalingVector[1];
         var scalingVector2 = vec3.fromValues(0.1, 0.1, 0.1);
@@ -503,8 +507,8 @@ class Cube extends Drawable {
           scalingVector2[2] = temp;
         }
 
-        this.createtriangularprism(indices, positions, normals, scalingVector, translationVector, randomint);
-        this.createtriangularroof(indices, positions, normals, scalingVector, translationVector, scalingVector2, randomint);
+        this.createtriangularprism(indices, positions, normals, scalingVector, translationVector, randomint, rad);
+        this.createtriangularroof(indices, positions, normals, scalingVector, translationVector, scalingVector2, randomint, rad);
         if(Math.random()<randomness && tempsection.right)
         {
           let temphalfdepth = Math.random() * 0.5 * tempsection.halfdepth + 0.25 * tempsection.halfdepth;
@@ -622,10 +626,48 @@ class Cube extends Drawable {
 
   var halfrange = 80;
 
-  for(let i = -halfrange; i < halfrange; i+=2.0)
+  // for(let i = -halfrange; i < halfrange; i+=2.0)
+  // {
+  //   for(let j = -halfrange; j < halfrange; j+=2.0)
+  //   {
+  //     var boundx = 1.0;
+  //     var boundy = 1.0;
+  //     var boundz = 1.0;
+    
+  //     var iteration = 2.0;
+    
+  //     var halfweight = (Math.random() * 0.25 + 0.5) * boundx; // X
+  //     var halfheight = (Math.random() * 0.25 + 0.5) * boundy; // Y
+  //     var halfdepth = (Math.random() * 0.25 + 0.5) * boundz;  // Z
+    
+  //     var randomness = 0.8;
+
+  //     var bigi = i + Math.random()-0.5;
+  //     var bigj = j + Math.random()-0.5;
+    
+  //     var root = new Section(halfweight, halfheight, halfdepth, bigi, 0, bigj);
+  //     var moveup = halfheight;
+    
+  //     sections = [];
+  //     sections.push(root);
+    
+  //     var scalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+  //     var translationVector = vec3.fromValues(0.0, 0.0, 0.0);
+  //     this.createcubes(indices, positions, normals, iteration, sections, allsections, moveup, randomness, boundx, boundy, boundz, bigi, bigj);
+  //   }
+  // }
+
+  var step = 4.0
+  var ring = 40.0;
+
+  for(let index = 1.0; index < step * ring; index+=step)
   {
-    for(let j = -halfrange; j < halfrange; j+=2.0)
+    var radius = (index-1) * 0.5;
+    for(let k = 0.0; k<=1.0; k+=1.0/index)
     {
+      var rad = k * 2 * Math.PI;
+      var i = radius * Math.cos(rad);
+      var j = radius * Math.sin(rad);
       var boundx = 1.0;
       var boundy = 1.0;
       var boundz = 1.0;
@@ -637,9 +679,9 @@ class Cube extends Drawable {
       var halfdepth = (Math.random() * 0.25 + 0.5) * boundz;  // Z
     
       var randomness = 0.8;
-
-      var bigi = i + Math.random()-0.5;
-      var bigj = j + Math.random()-0.5;
+  
+      var bigi = i;// + Math.random()-0.5;
+      var bigj = j;// + Math.random()-0.5;
     
       var root = new Section(halfweight, halfheight, halfdepth, bigi, 0, bigj);
       var moveup = halfheight;
@@ -649,7 +691,7 @@ class Cube extends Drawable {
     
       var scalingVector = vec3.fromValues(1.0, 1.0, 1.0);
       var translationVector = vec3.fromValues(0.0, 0.0, 0.0);
-      this.createcubes(indices, positions, normals, iteration, sections, allsections, moveup, randomness, boundx, boundy, boundz, bigi, bigj);
+      this.createcubes(indices, positions, normals, iteration, sections, allsections, moveup, randomness, boundx, boundy, boundz, bigi, bigj, -rad);
     }
   }
 

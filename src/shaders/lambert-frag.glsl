@@ -22,7 +22,7 @@ in float fs_DistoCam;
 out vec4 out_Col; // This is the final output color that you will see on your
                   // screen for the pixel that is currently being processed.
 vec4 fogColor = vec4(0.9, 0.9, 0.85, 1.0);
-const float fogdensity = .00001;
+const float fogdensity = .0005;
 
 vec3 applyFog( in vec3  rgb,       // original color of the pixel
                in float distance ) // camera to point distance

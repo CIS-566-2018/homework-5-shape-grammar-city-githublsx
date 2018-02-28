@@ -23,12 +23,34 @@ let icosphere: Icosphere;
 let square: Square;
 let cube: Cube;
 
+function readTextFile(file: string): string
+{
+    var allTest = "";
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+                allTest = rawFile.responseText;
+                return allTest;
+            }
+        }
+    }
+    rawFile.send(null);
+    return allTest;
+}
+
+var eave = readTextFile("./src/mesh/eave.obj");
+
 function loadScene() {
   icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, controls.tesselations);
   icosphere.create();
   square = new Square(vec3.fromValues(0, 0, 0), 100, 0);
   square.create();
-  cube = new Cube(vec3.fromValues(0, 0, 0));
+  cube = new Cube(eave, vec3.fromValues(0, 0, 0));
   cube.create();
 }
 

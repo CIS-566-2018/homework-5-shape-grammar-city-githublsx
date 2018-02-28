@@ -48,8 +48,8 @@ void main()
     vec4 modelposition = u_Model * vs_Pos;   // Temporarily store the transformed vertex positions for use below
 
     fs_LightVec = lightPos - modelposition;  // Compute the direction in which the light source lies
-    fs_DistoCam = length(u_Camerapos - modelposition); 
-    //fs_LightVec = vec4(1.0, 2.0, 3.0, 0.0);
+    //fs_DistoCam = length(u_Camerapos - modelposition); 
+    fs_LightVec = vec4(1.0, 2.0, 3.0, 0.0);
     gl_Position = u_ViewProj * modelposition;// gl_Position is a built-in variable of OpenGL which is
                                              // used to render the final positions of the geometry's vertices
 }

@@ -658,7 +658,7 @@ class Cube extends Drawable {
   // }
 
   var step = 4.0
-  var ring = 40.0;
+  var ring = 50.0;
 
   for(let index = 1.0; index < step * ring; index+=step)
   {
@@ -666,11 +666,12 @@ class Cube extends Drawable {
     for(let k = 0.0; k<=1.0; k+=1.0/index)
     {
       var rad = k * 2 * Math.PI;
-      var i = radius * Math.cos(rad);
-      var j = radius * Math.sin(rad);
-      var boundx = 1.0;
-      var boundy = 1.0;
-      var boundz = 1.0;
+      var change = Math.max(5.0 - (index - 1.0)/(4.0 * ring / 4.0), 1.0);
+      var i = radius * Math.cos(rad) * 1.5;
+      var j = radius * Math.sin(rad) * 1.5;
+      var boundx = change;
+      var boundy = change;
+      var boundz = change;
     
       var iteration = 2.0;
     
@@ -680,10 +681,11 @@ class Cube extends Drawable {
     
       var randomness = 0.8;
   
-      var bigi = i;// + Math.random()-0.5;
-      var bigj = j;// + Math.random()-0.5;
+      var bigi = i + Math.random()-0.5;
+      var bigj = j + Math.random()-0.5;
+      var bigk = Math.max(0, (step * ring * 0.5 - radius) * (change - 1.0) * 0.3 + Math.random()-0.5);
     
-      var root = new Section(halfweight, halfheight, halfdepth, bigi, 0, bigj);
+      var root = new Section(halfweight, halfheight, halfdepth, bigi, bigk, bigj);
       var moveup = halfheight;
     
       sections = [];

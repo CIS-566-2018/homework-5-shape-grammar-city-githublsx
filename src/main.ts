@@ -19,7 +19,7 @@ const controls = {
   color2: [85, 80, 75],
   color3: [60, 59, 58],
   color4: [117, 92, 67],
-  color5: [157, 148, 134],
+  color5: [140, 132, 100],
   color6: [89, 54, 0],
   color7: [93, 187, 116],//[215, 183, 208],
   shader: 'fun',
@@ -117,7 +117,7 @@ function main() {
   // Initial call to load scene
   loadScene();
 
-  const camera = new Camera(vec3.fromValues(3, 3, 3), vec3.fromValues(0, 0, 0));
+  const camera = new Camera(vec3.fromValues(50, 50, 50), vec3.fromValues(0, 0, 0));
 
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(0.9, 0.9, 0.85, 1);
@@ -163,27 +163,21 @@ function main() {
     // }
     renderer.render(camera, shader, drawable, //[icosphere,//square,cube,], 
       vec4.fromValues(controls.color[0]/255, controls.color[1]/255, controls.color[2]/255, 1), dt/1000.0);
-    stats.end();
 
     renderer.render(camera, shader, [roof], //[icosphere,//square,cube,], 
       vec4.fromValues(controls.color2[0]/255, controls.color2[1]/255, controls.color2[2]/255, 1), dt/1000.0);
-    stats.end();
 
     renderer.render(camera, shader, [ridge], //[icosphere,//square,cube,], 
       vec4.fromValues(controls.color3[0]/255, controls.color3[1]/255, controls.color3[2]/255, 1), dt/1000.0);
-    stats.end();
 
     renderer.render(camera, shader, [support], //[icosphere,//square,cube,], 
       vec4.fromValues(controls.color4[0]/255, controls.color4[1]/255, controls.color4[2]/255, 1), dt/1000.0);
-    stats.end();
 
     renderer.render(camera, shader, [branches], //[icosphere,//square,cube,], 
       vec4.fromValues(controls.color6[0]/255, controls.color6[1]/255, controls.color6[2]/255, 1), dt/1000.0);
-    stats.end();
 
     renderer.render(camera, shader, [leaves], //[icosphere,//square,cube,], 
       vec4.fromValues(controls.color7[0]/255, controls.color7[1]/255, controls.color7[2]/255, 1), dt/1000.0);
-    stats.end();
 
     renderer.render(camera, shader, [square], //[icosphere,//square,cube,], 
       vec4.fromValues(controls.color5[0]/255, controls.color5[1]/255, controls.color5[2]/255, 1), dt/1000.0);

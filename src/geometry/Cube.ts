@@ -968,25 +968,33 @@ class Cube extends Drawable {
 
   console.log(totalnumber);
 
+  //perlin noise
   var symbols = new Array<Array<Symbol>>();
+  var randonoffsetx = Math.random() * 50.0 - 25.0;//0.1;
+  var randonoffsetz = Math.random() * 50.0 - 25.0;//-2.8;
+  console.log("x" + randonoffsetx);
+  console.log("z" + randonoffsetz);
+  var mid1 = 0.5 + 2.0 / 3.0 + 0.05;
+  var mid2 = 0.5 + 4.0 / 3.0 - 0.05;
   for(let i = 0; i < totalnumber; i++)
   {
     symbols.push([]);
     for(let j = 0; j < totalnumber; j++)
     {
-      var randomnumber = 0.5 + 2.0 * this.fbm(vec2.fromValues(i/totalnumber * scaleofnoise, j/totalnumber * scaleofnoise));
+      var randomnumber = 0.5 + 2.0 * this.fbm(vec2.fromValues((i/totalnumber + randonoffsetx) * scaleofnoise, 
+                                                              (j/totalnumber + randonoffsetz) * scaleofnoise));
       //console.log("randomnumber" + randomnumber);
-      if(randomnumber>=0.5 && randomnumber<1.10)
+      if(randomnumber>=0.5 && randomnumber<mid1)
       {
         let symbol = new Symbol(0, randomnumber);
         symbols[i][j] = symbol;
       }
-      else if(randomnumber>=1.10 && randomnumber<1.50)
+      else if(randomnumber>=mid1 && randomnumber<mid2)
       {
         let symbol = new Symbol(1, randomnumber);
         symbols[i][j] = symbol;
       }
-      else if(randomnumber>=1.50 && randomnumber<2.50)
+      else if(randomnumber>=mid2 && randomnumber<0.5 + 2.0)
       {
         let symbol = new Symbol(2, randomnumber);
         symbols[i][j] = symbol;
@@ -1010,10 +1018,10 @@ class Cube extends Drawable {
     {
 
       //console.log("i "+i/totalnumber+ " j "+j/totalnumber);
+      //add trees
       if(symbols[i][j].mark == 0)
       {
-        //1.1~0.5
-        for(let treeindex = symbols[i][j].randomness; treeindex <= 1.1; treeindex += 0.05)
+        for(let treeindex = symbols[i][j].randomness; treeindex <= mid1; treeindex += 0.05)
         {
           if(Math.random()<0.5)
           {

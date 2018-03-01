@@ -16,14 +16,16 @@ const controls = {
   tesselations: 6,
   'Load Scene': loadScene, // A function pointer, essentially
   color: [225, 218, 207],
-  color2: [85, 80, 75],
+  color2: [71, 73, 80],
   color3: [60, 59, 58],
   color4: [117, 92, 67],
   color5: [140, 132, 100],
   color6: [89, 54, 0],
   color7: [93, 187, 116],//[215, 183, 208],
+  color8: [225, 117, 94],
   shader: 'fun',
   drawable: 'sphere',
+  minroof: 1.0,
 };
 
 let icosphere: Icosphere;
@@ -93,6 +95,7 @@ function main() {
   // Add controls to the gui
   const gui = new DAT.GUI();
   gui.add(controls, 'tesselations', 0, 8).step(1);
+  gui.add(controls, 'minroof', -5.0, 5.0).step(0.01);
   gui.add(controls, 'Load Scene');
   gui.addColor(controls, 'color');
   gui.addColor(controls, 'color2');
@@ -101,6 +104,7 @@ function main() {
   gui.addColor(controls, 'color5');
   gui.addColor(controls, 'color6');
   gui.addColor(controls, 'color7');
+  gui.addColor(controls, 'color8');
   gui.add(controls, 'shader', ['lambert','fun']);
   gui.add(controls, 'drawable', ['cube','sphere','square']);
 
@@ -135,6 +139,11 @@ function main() {
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/lambert-frag2.glsl')),
   ]);
 
+  const lambert3 = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/lambert-vert3.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/lambert-frag3.glsl')),
+  ]);
+
   var lastUpdate = Date.now();
 
   // This function will be called every frame
@@ -161,10 +170,13 @@ function main() {
     // {
     //   drawable = [icosphere];
     // }
+    lambert3.setGeometryColor2(vec4.fromValues(controls.color8[0]/255, controls.color8[1]/255, controls.color8[2]/255, 1));
+    lambert3.setMaxRoof(cube.maxroof);
+    lambert3.setMinRoof(controls.minroof);
     renderer.render(camera, shader, drawable, //[icosphere,//square,cube,], 
       vec4.fromValues(controls.color[0]/255, controls.color[1]/255, controls.color[2]/255, 1), dt/1000.0);
 
-    renderer.render(camera, shader, [roof], //[icosphere,//square,cube,], 
+    renderer.render(camera, lambert3, [roof], //[icosphere,//square,cube,], 
       vec4.fromValues(controls.color2[0]/255, controls.color2[1]/255, controls.color2[2]/255, 1), dt/1000.0);
 
     renderer.render(camera, shader, [ridge], //[icosphere,//square,cube,], 

@@ -74,6 +74,9 @@ class Cube extends Drawable {
   branches: Objs;
   leaves: Objs;
 
+  maxroof: number = 0;
+  minroof: number = 100.0;
+
   constructor(branch1tring: string, branch2tring: string, leaves1tring: string, leaves2tring: string, eavestring: string, 
     center: vec3, roof: Objs, ridge: Objs, support: Objs, branches: Objs, leaves: Objs) {
     super(); // Call the constructor of the super class. This is required.
@@ -256,12 +259,24 @@ class Cube extends Drawable {
     //up
     var upfront =  vec4.fromValues(0.0, 1.0, 1.0, 1.0);
     vec4.transformMat4(upfront, upfront, transformMatrix);
+    
+    if(upfront[1]>this.maxroof)
+    {
+      this.maxroof = upfront[1];
+    }
+
     var upback =  vec4.fromValues(0.0, 1.0, -1.0, 1.0);
     vec4.transformMat4(upback, upback, transformMatrix);
 
     //right
     var rightback = vec4.fromValues(1.0, -1.0, -1.0, 1.0);
     vec4.transformMat4(rightback, rightback, transformMatrix);
+
+    if(rightback[1]>this.minroof)
+    {
+      this.minroof = upfront[1];
+    }
+
     var rightfront = vec4.fromValues(1.0, -1.0, 1.0, 1.0);
     vec4.transformMat4(rightfront, rightfront, transformMatrix);
 
@@ -650,7 +665,8 @@ class Cube extends Drawable {
           tempsection.intobaclony = true;
           
           //create roof
-          this.createtriangularroof(this.roof.indices, this.roof.positions, this.roof.normals, scalingVector, translationVector2, scalingVector2, rad + randomint * Math.PI * 0.5);
+          this.createtriangularroof(this.roof.indices, this.roof.positions, this.roof.normals, 
+            scalingVector, translationVector2, scalingVector2, rad + randomint * Math.PI * 0.5);
 
           //create prism
           if(Math.random()<randomness3)
@@ -679,7 +695,8 @@ class Cube extends Drawable {
         else
         {
           //create roof
-          this.createtriangularroof(this.roof.indices, this.roof.positions, this.roof.normals, scalingVector, translationVector2, scalingVector2, rad + randomint * Math.PI * 0.5);
+          this.createtriangularroof(this.roof.indices, this.roof.positions, this.roof.normals, 
+            scalingVector, translationVector2, scalingVector2, rad + randomint * Math.PI * 0.5);
           this.createtriangularprism(indices, positions, normals, scalingVector, translationVector2, rad + randomint * Math.PI * 0.5);
 
           //create cube
@@ -960,7 +977,6 @@ class Cube extends Drawable {
   var sections = new Array<Section>();
   var allsections = new Array<Section>();
 
-  //var halfrange = 50;
   var step = 2.5;
   var totalnumber = 40;
   var halfrange = totalnumber * step / 2.0;
@@ -1012,6 +1028,7 @@ class Cube extends Drawable {
     }
   }
 
+  //begin draw mesh
   for(let i = 0; -halfrange + i * 2.5 < halfrange; i++)
   {
     for(let j = 0; -halfrange + j * 2.5 < halfrange; j++)

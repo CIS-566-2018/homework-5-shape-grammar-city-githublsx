@@ -58,11 +58,24 @@ class Cube extends Drawable {
   eavestring: string;
   eavemesh: any;
 
+  branch1tring: string;
+  branch1mesh: any;
+  leaves1tring: string;
+  leaves1mesh: any;
+
+  branch2tring: string;
+  branch2mesh: any;
+  leaves2tring: string;
+  leaves2mesh: any;
+
   roof: Objs;
   ridge: Objs;
   support: Objs;
+  branches: Objs;
+  leaves: Objs;
 
-  constructor(eavestring: string, center: vec3, roof: Objs, ridge: Objs, support: Objs) {
+  constructor(branch1tring: string, branch2tring: string, leaves1tring: string, leaves2tring: string, eavestring: string, 
+    center: vec3, roof: Objs, ridge: Objs, support: Objs, branches: Objs, leaves: Objs) {
     super(); // Call the constructor of the super class. This is required.
     this.center = vec4.fromValues(center[0], center[1], center[2], 1);
     this.eavestring = eavestring;
@@ -70,6 +83,16 @@ class Cube extends Drawable {
     this.roof = roof;
     this.ridge = ridge;
     this.support = support;
+    this.branch1tring = branch1tring;
+    this.branch1mesh = new OBJLOADER.Mesh(this.branch1tring); 
+    this.branch2tring = branch2tring;
+    this.branch2mesh = new OBJLOADER.Mesh(this.branch2tring);
+    this.leaves1tring = leaves1tring;
+    this.leaves1mesh = new OBJLOADER.Mesh(this.leaves1tring); 
+    this.leaves2tring = leaves2tring;
+    this.leaves2mesh = new OBJLOADER.Mesh(this.leaves2tring); 
+    this.branches = branches;
+    this.leaves = leaves;
   }
 
   pushnormal(numberarray: number[], vector: vec4)
@@ -439,6 +462,39 @@ class Cube extends Drawable {
       vec4.transformMat4(vector, vec4.fromValues(this.eavemesh.vertexNormals[i], this.eavemesh.vertexNormals[i+1], this.eavemesh.vertexNormals[i+2], 0), inverseTransformMatrix);
       this.pushnormal(normals, vector); 
       vec4.transformMat4(vector, vec4.fromValues(this.eavemesh.vertices[i], this.eavemesh.vertices[i+1], this.eavemesh.vertices[i+2], 1), transformMatrix);
+      this.pushposition(positions, vector); 
+    }
+  }
+
+  createobj(mesh: any, indices: number[], positions: number[], normals: number[], scalingVector: vec3, translationVector: vec3, rad: number)
+  {
+    var translationMatrix = mat4.create();
+    mat4.fromTranslation(translationMatrix, translationVector);
+    var rotationMatrix = mat4.create();
+    mat4.fromYRotation(rotationMatrix, rad);
+    var scaleMatrix = mat4.create();
+    mat4.fromScaling(scaleMatrix, scalingVector);
+  
+    var transformMatrix = mat4.create();
+    mat4.multiply(transformMatrix, rotationMatrix, scaleMatrix);
+    mat4.multiply(transformMatrix, translationMatrix, transformMatrix);
+    var inverseTransformMatrix = mat4.create();
+    mat4.transpose(inverseTransformMatrix, transformMatrix);
+    mat4.invert(inverseTransformMatrix, inverseTransformMatrix);
+
+    var offset = positions.length/4;
+  
+    for(let i = 0; i < mesh.indices.length; i++)
+    {
+      indices.push(mesh.indices[i] + offset);
+    }
+
+    for(let i = 0; i < mesh.vertices.length; i+=3)
+    {
+      var vector = vec4.create();
+      vec4.transformMat4(vector, vec4.fromValues(mesh.vertexNormals[i], mesh.vertexNormals[i+1], mesh.vertexNormals[i+2], 0), inverseTransformMatrix);
+      this.pushnormal(normals, vector); 
+      vec4.transformMat4(vector, vec4.fromValues(mesh.vertices[i], mesh.vertices[i+1], mesh.vertices[i+2], 1), transformMatrix);
       this.pushposition(positions, vector); 
     }
   }
@@ -906,9 +962,9 @@ class Cube extends Drawable {
 
   //var halfrange = 50;
   var step = 2.5;
-  var totalnumber = 50;
+  var totalnumber = 40;
   var halfrange = totalnumber * step / 2.0;
-  var scaleofnoise = 5.0;
+  var scaleofnoise = totalnumber / 10.0;
 
   console.log(totalnumber);
 
@@ -954,8 +1010,32 @@ class Cube extends Drawable {
     {
 
       //console.log("i "+i/totalnumber+ " j "+j/totalnumber);
-
-
+      if(symbols[i][j].mark == 0)
+      {
+        //1.1~0.5
+        for(let treeindex = symbols[i][j].randomness; treeindex <= 1.1; treeindex += 0.05)
+        {
+          if(Math.random()<0.5)
+          {
+            let bigi = -halfrange + i * 2.5 + Math.random() * 1.5-0.5* 1.5;
+            let bigj = -halfrange + j * 2.5 + Math.random() * 1.5-0.5* 1.5;
+            let treescalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+            let treetranslationVector = vec3.fromValues(bigi, 0.0, bigj);
+            this.createobj(this.branch2mesh, this.branches.indices, this.branches.positions, this.branches.normals, treescalingVector, treetranslationVector, Math.random() * 2 * Math.PI);
+            this.createobj(this.leaves2mesh, this.leaves.indices, this.leaves.positions, this.leaves.normals, treescalingVector, treetranslationVector, Math.random() * 2 * Math.PI);
+          }
+          else
+          {
+            let bigi = -halfrange + i * 2.5 + Math.random() * 1.5-0.5* 1.5;
+            let bigj = -halfrange + j * 2.5 + Math.random() * 1.5-0.5* 1.5;
+            let treescalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+            let treetranslationVector = vec3.fromValues(bigi, 0.0, bigj);
+            let treerandom = Math.random();
+            this.createobj(this.branch1mesh, this.branches.indices, this.branches.positions, this.branches.normals, treescalingVector, treetranslationVector, treerandom * 2 * Math.PI);
+            this.createobj(this.leaves1mesh, this.leaves.indices, this.leaves.positions, this.leaves.normals, treescalingVector, treetranslationVector, treerandom * 2 * Math.PI);
+          }
+        }
+      }
       if(symbols[i][j].mark == 1 || symbols[i][j].mark == 2 )
       {
         var bigi = -halfrange + i * 2.5 + Math.random()-0.5;
@@ -988,9 +1068,34 @@ class Cube extends Drawable {
       }
       else if(symbols[i][j].mark == -2)
       {
-        symbols[i+1][j].mark = 0;
-        symbols[i][j+1].mark = 0;
-        symbols[i+1][j+1].mark = 0;
+        symbols[i+1][j].mark = -10;
+        symbols[i][j+1].mark = -10;
+        symbols[i+1][j+1].mark = -10;
+
+        //generate a random tree
+        if(Math.random()<0.8)
+        {
+          if(Math.random()<0.5)
+          {
+            let bigi = -halfrange + (i+0.5) * 2.5 + 1.2 + Math.random() * 1.5-0.5*1.5;
+            let bigj = -halfrange + (j+0.5) * 2.5 + 1.2 + Math.random() * 1.5-0.5*1.5;
+            let treescalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+            let treetranslationVector = vec3.fromValues(bigi, 0.0, bigj);
+            this.createobj(this.branch2mesh, this.branches.indices, this.branches.positions, this.branches.normals, treescalingVector, treetranslationVector, Math.random() * 2 * Math.PI);
+            this.createobj(this.leaves2mesh, this.leaves.indices, this.leaves.positions, this.leaves.normals, treescalingVector, treetranslationVector, Math.random() * 2 * Math.PI);
+          }
+          else
+          {
+            let bigi = -halfrange + (i+0.5) * 2.5 + -1.2 + Math.random() * 1.5-0.5*1.5;
+            let bigj = -halfrange + (j+0.5) * 2.5 + -1.2 + Math.random() * 1.5-0.5*1.5;
+            let treescalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+            let treetranslationVector = vec3.fromValues(bigi, 0.0, bigj);
+            let treerandom = Math.random();
+            this.createobj(this.branch1mesh, this.branches.indices, this.branches.positions, this.branches.normals, treescalingVector, treetranslationVector, treerandom * 2 * Math.PI);
+            this.createobj(this.leaves1mesh, this.leaves.indices, this.leaves.positions, this.leaves.normals, treescalingVector, treetranslationVector, treerandom * 2 * Math.PI);
+          }
+        }
+
 
         var bigi = -halfrange + (i+0.5) * 2.5;
         var bigj = -halfrange + (j+0.5) * 2.5;

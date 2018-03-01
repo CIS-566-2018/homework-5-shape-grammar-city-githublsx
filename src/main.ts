@@ -15,10 +15,13 @@ import Objs from './geometry/Objs';
 const controls = {
   tesselations: 6,
   'Load Scene': loadScene, // A function pointer, essentially
-  color: [185, 165, 148],
+  color: [225, 218, 207],
   color2: [85, 80, 75],
   color3: [60, 59, 58],
   color4: [117, 92, 67],
+  color5: [157, 148, 134],
+  color6: [89, 54, 0],
+  color7: [93, 187, 116],//[215, 183, 208],
   shader: 'fun',
   drawable: 'sphere',
 };
@@ -29,6 +32,8 @@ let cube: Cube;
 let roof: Objs;
 let ridge: Objs;
 let support: Objs;
+let branches: Objs;
+let leaves: Objs;
 
 function readTextFile(file: string): string
 {
@@ -51,6 +56,10 @@ function readTextFile(file: string): string
 }
 
 var eave = readTextFile("./src/mesh/eave.obj");
+var branch1 = readTextFile("./src/mesh/branch1.obj");
+var branch2 = readTextFile("./src/mesh/branch2.obj");
+var leaves1 = readTextFile("./src/mesh/leaves1.obj");
+var leaves2 = readTextFile("./src/mesh/leaves2.obj");
 
 function loadScene() {
   icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, controls.tesselations);
@@ -60,11 +69,16 @@ function loadScene() {
   roof = new Objs();
   ridge = new Objs();
   support = new Objs();
-  cube = new Cube(eave, vec3.fromValues(0, 0, 0), roof, ridge, support);
+  branches = new Objs();
+  leaves = new Objs();
+  cube = new Cube(branch1, branch2, leaves1, leaves2, eave, vec3.fromValues(0, 0, 0), 
+        roof, ridge, support, branches, leaves);
   cube.create();
   roof.create();
   ridge.create();
   support.create();
+  branches.create();
+  leaves.create();
 }
 
 function main() {
@@ -84,6 +98,9 @@ function main() {
   gui.addColor(controls, 'color2');
   gui.addColor(controls, 'color3');
   gui.addColor(controls, 'color4');
+  gui.addColor(controls, 'color5');
+  gui.addColor(controls, 'color6');
+  gui.addColor(controls, 'color7');
   gui.add(controls, 'shader', ['lambert','fun']);
   gui.add(controls, 'drawable', ['cube','sphere','square']);
 
@@ -160,8 +177,16 @@ function main() {
       vec4.fromValues(controls.color4[0]/255, controls.color4[1]/255, controls.color4[2]/255, 1), dt/1000.0);
     stats.end();
 
+    renderer.render(camera, shader, [branches], //[icosphere,//square,cube,], 
+      vec4.fromValues(controls.color6[0]/255, controls.color6[1]/255, controls.color6[2]/255, 1), dt/1000.0);
+    stats.end();
+
+    renderer.render(camera, shader, [leaves], //[icosphere,//square,cube,], 
+      vec4.fromValues(controls.color7[0]/255, controls.color7[1]/255, controls.color7[2]/255, 1), dt/1000.0);
+    stats.end();
+
     renderer.render(camera, shader, [square], //[icosphere,//square,cube,], 
-      vec4.fromValues(controls.color[0]/255, controls.color[1]/255, controls.color[2]/255, 1), dt/1000.0);
+      vec4.fromValues(controls.color5[0]/255, controls.color5[1]/255, controls.color5[2]/255, 1), dt/1000.0);
     stats.end();
 
     // Tell the browser to call `tick` again whenever it renders a new frame

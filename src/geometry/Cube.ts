@@ -2,6 +2,7 @@ import {vec2, vec3, vec4, mat4} from 'gl-matrix';
 import Drawable from '../rendering/gl/Drawable';
 import {gl} from '../globals';
 import * as OBJLOADER from 'webgl-obj-loader';
+import Objs from '../geometry/Objs'
 
 class Symbol{
   mark: number;
@@ -57,11 +58,18 @@ class Cube extends Drawable {
   eavestring: string;
   eavemesh: any;
 
-  constructor(eavestring: string, center: vec3) {
+  roof: Objs;
+  ridge: Objs;
+  support: Objs;
+
+  constructor(eavestring: string, center: vec3, roof: Objs, ridge: Objs, support: Objs) {
     super(); // Call the constructor of the super class. This is required.
     this.center = vec4.fromValues(center[0], center[1], center[2], 1);
     this.eavestring = eavestring;
     this.eavemesh = new OBJLOADER.Mesh(this.eavestring);
+    this.roof = roof;
+    this.ridge = ridge;
+    this.support = support;
   }
 
   pushnormal(numberarray: number[], vector: vec4)
@@ -586,7 +594,7 @@ class Cube extends Drawable {
           tempsection.intobaclony = true;
           
           //create roof
-          this.createtriangularroof(indices, positions, normals, scalingVector, translationVector2, scalingVector2, rad + randomint * Math.PI * 0.5);
+          this.createtriangularroof(this.roof.indices, this.roof.positions, this.roof.normals, scalingVector, translationVector2, scalingVector2, rad + randomint * Math.PI * 0.5);
 
           //create prism
           if(Math.random()<randomness3)
@@ -604,18 +612,18 @@ class Cube extends Drawable {
           //railngpillars
           var pillarscalingVector = vec3.fromValues(supportwidth, tempsection.halfheight + 1 / 2 * offset, supportwidth);
           var pillartranslationVector = vec3.fromValues(tempsection.translateweight - tempsection.halfweight + roofthickness, tempsection.translateheight + moveup + 1 / 2 * offset, tempsection.translatedepth - tempsection.halfdepth + roofthickness);
-          this.createcube(indices, positions, normals, pillarscalingVector, pillartranslationVector, rad);
+          this.createcube(this.support.indices, this.support.positions, this.support.normals, pillarscalingVector, pillartranslationVector, rad);
           pillartranslationVector = vec3.fromValues(tempsection.translateweight + tempsection.halfweight - roofthickness, tempsection.translateheight + moveup + 1 / 2 * offset, tempsection.translatedepth - tempsection.halfdepth + roofthickness);
-          this.createcube(indices, positions, normals, pillarscalingVector, pillartranslationVector, rad);
+          this.createcube(this.support.indices, this.support.positions, this.support.normals, pillarscalingVector, pillartranslationVector, rad);
           pillartranslationVector = vec3.fromValues(tempsection.translateweight - tempsection.halfweight + roofthickness, tempsection.translateheight + moveup + 1 / 2 * offset, tempsection.translatedepth + tempsection.halfdepth - roofthickness);
-          this.createcube(indices, positions, normals, pillarscalingVector, pillartranslationVector, rad);
+          this.createcube(this.support.indices, this.support.positions, this.support.normals, pillarscalingVector, pillartranslationVector, rad);
           pillartranslationVector = vec3.fromValues(tempsection.translateweight + tempsection.halfweight - roofthickness, tempsection.translateheight + moveup + 1 / 2 * offset, tempsection.translatedepth + tempsection.halfdepth - roofthickness);
-          this.createcube(indices, positions, normals, pillarscalingVector, pillartranslationVector, rad);
+          this.createcube(this.support.indices, this.support.positions, this.support.normals, pillarscalingVector, pillartranslationVector, rad);
         }
         else
         {
           //create roof
-          this.createtriangularroof(indices, positions, normals, scalingVector, translationVector2, scalingVector2, rad + randomint * Math.PI * 0.5);
+          this.createtriangularroof(this.roof.indices, this.roof.positions, this.roof.normals, scalingVector, translationVector2, scalingVector2, rad + randomint * Math.PI * 0.5);
           this.createtriangularprism(indices, positions, normals, scalingVector, translationVector2, rad + randomint * Math.PI * 0.5);
 
           //create cube
@@ -630,23 +638,23 @@ class Cube extends Drawable {
         {
           eavetranslationVector[1] += scalingVector[1] + roofthickness;
           eavetranslationVector[0] += scalingVector[2] + roofthickness;
-          this.createeave(indices, positions, normals, scalingVector2, eavetranslationVector, rad + randomint * Math.PI * 0.5);
+          this.createeave(this.ridge.indices, this.ridge.positions, this.ridge.normals, scalingVector2, eavetranslationVector, rad + randomint * Math.PI * 0.5);
           eavetranslationVector[0] -= 2 * (scalingVector[2] + roofthickness);
-          this.createeave(indices, positions, normals, scalingVector2, eavetranslationVector, rad + Math.PI + randomint * Math.PI * 0.5);
+          this.createeave(this.ridge.indices, this.ridge.positions, this.ridge.normals, scalingVector2, eavetranslationVector, rad + Math.PI + randomint * Math.PI * 0.5);
         }
         else
         {
           eavetranslationVector[1] += scalingVector[1] + roofthickness;
           eavetranslationVector[2] += scalingVector[2] + roofthickness;
-          this.createeave(indices, positions, normals, scalingVector2, eavetranslationVector, rad + randomint * Math.PI * 0.5);
+          this.createeave(this.ridge.indices, this.ridge.positions, this.ridge.normals, scalingVector2, eavetranslationVector, rad + randomint * Math.PI * 0.5);
           eavetranslationVector[2] -= 2 * (scalingVector[2] + roofthickness);
-          this.createeave(indices, positions, normals, scalingVector2, eavetranslationVector, rad + Math.PI + randomint * Math.PI * 0.5);
+          this.createeave(this.ridge.indices, this.ridge.positions, this.ridge.normals, scalingVector2, eavetranslationVector, rad + Math.PI + randomint * Math.PI * 0.5);
         }
 
         //add rooftop
         var rooftoptranslationVector = vec3.fromValues(translationVector2[0], translationVector2[1] + scalingVector[1] + roofthickness, translationVector2[2]);
         var rooftopscalingVector = vec3.fromValues(roofthickness / 3.0, roofthickness / 3.0, scalingVector[2]+ 2.0 * roofthickness);
-        this.createcube(indices, positions, normals, rooftopscalingVector, rooftoptranslationVector, rad + randomint * Math.PI * 0.5);
+        this.createcube(this.ridge.indices, this.ridge.positions, this.ridge.normals, rooftopscalingVector, rooftoptranslationVector, rad + randomint * Math.PI * 0.5);
 
 
         //create support
@@ -654,7 +662,7 @@ class Cube extends Drawable {
         {
           let widescalingVector = vec3.fromValues(tempsection.halfweight + roofthickness, roofthickness / 2.0, tempsection.halfdepth + roofthickness);
           let widetranslationVector = vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup - tempsection.halfheight, tempsection.translatedepth);
-          this.createcube(indices, positions, normals, widescalingVector, widetranslationVector, rad);
+          this.createcube(this.support.indices, this.support.positions, this.support.normals, widescalingVector, widetranslationVector, rad);
           var numofsupports = Math.floor(tempsection.halfdepth * 2 / supportstep);
           var newsupportstep = tempsection.halfdepth * 2 / numofsupports;
           for(var index = -tempsection.halfdepth; index <= tempsection.halfdepth; index += newsupportstep)
@@ -665,7 +673,7 @@ class Cube extends Drawable {
             let translationVector3 = vec3.fromValues(xdist, ydist, zdist);
             vec3.add(translationVector3, translationVector3, vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup, tempsection.translatedepth));
             let scalingVector3 = vec3.fromValues(supportwidth, (tempsection.translateheight + moveup - tempsection.halfheight) * 0.5, supportwidth);
-            this.createcube(indices, positions, normals, scalingVector3, translationVector3, 0.0);
+            this.createcube(this.support.indices, this.support.positions, this.support.normals, scalingVector3, translationVector3, 0.0);
           }
         }
 
@@ -673,7 +681,7 @@ class Cube extends Drawable {
         {
           let widescalingVector = vec3.fromValues(tempsection.halfweight + roofthickness, roofthickness / 2.0, tempsection.halfdepth + roofthickness);
           let widetranslationVector = vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup - tempsection.halfheight, tempsection.translatedepth);
-          this.createcube(indices, positions, normals, widescalingVector, widetranslationVector, rad);
+          this.createcube(this.support.indices, this.support.positions, this.support.normals, widescalingVector, widetranslationVector, rad);
           var numofsupports = Math.floor(tempsection.halfdepth * 2 / supportstep);
           var newsupportstep = tempsection.halfdepth * 2 / numofsupports;
           for(var index = -tempsection.halfdepth; index <= tempsection.halfdepth; index += newsupportstep)
@@ -684,7 +692,7 @@ class Cube extends Drawable {
             let translationVector3 = vec3.fromValues(xdist, ydist, zdist);
             vec3.add(translationVector3, translationVector3, vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup, tempsection.translatedepth));
             let scalingVector3 = vec3.fromValues(supportwidth, (tempsection.translateheight + moveup - tempsection.halfheight) * 0.5, supportwidth);
-            this.createcube(indices, positions, normals, scalingVector3, translationVector3, 0.0);
+            this.createcube(this.support.indices, this.support.positions, this.support.normals, scalingVector3, translationVector3, 0.0);
           }
         }
 
@@ -692,7 +700,7 @@ class Cube extends Drawable {
         {
           let widescalingVector = vec3.fromValues(tempsection.halfweight + roofthickness, roofthickness / 2.0, tempsection.halfdepth + roofthickness);
           let widetranslationVector = vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup - tempsection.halfheight, tempsection.translatedepth);
-          this.createcube(indices, positions, normals, widescalingVector, widetranslationVector, rad);
+          this.createcube(this.support.indices, this.support.positions, this.support.normals, widescalingVector, widetranslationVector, rad);
           var numofsupports = Math.floor(tempsection.halfweight * 2 / supportstep);
           var newsupportstep = tempsection.halfweight * 2 / numofsupports;
           for(var index = -tempsection.halfweight; index <= tempsection.halfweight; index += newsupportstep)
@@ -703,7 +711,7 @@ class Cube extends Drawable {
             let translationVector3 = vec3.fromValues(xdist, ydist, zdist);
             vec3.add(translationVector3, translationVector3, vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup, tempsection.translatedepth));
             let scalingVector3 = vec3.fromValues(supportwidth, (tempsection.translateheight + moveup - tempsection.halfheight) * 0.5, supportwidth);
-            this.createcube(indices, positions, normals, scalingVector3, translationVector3, 0.0);
+            this.createcube(this.support.indices, this.support.positions, this.support.normals, scalingVector3, translationVector3, 0.0);
           }
         }
 
@@ -711,7 +719,7 @@ class Cube extends Drawable {
         {
           let widescalingVector = vec3.fromValues(tempsection.halfweight + roofthickness, roofthickness / 2.0, tempsection.halfdepth + roofthickness);
           let widetranslationVector = vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup - tempsection.halfheight, tempsection.translatedepth);
-          this.createcube(indices, positions, normals, widescalingVector, widetranslationVector, rad);
+          this.createcube(this.support.indices, this.support.positions, this.support.normals, widescalingVector, widetranslationVector, rad);
           var numofsupports = Math.floor(tempsection.halfweight * 2 / supportstep);
           var newsupportstep = tempsection.halfweight * 2 / numofsupports;
           for(var index = -tempsection.halfweight; index <= tempsection.halfweight; index += newsupportstep)
@@ -722,7 +730,7 @@ class Cube extends Drawable {
             let translationVector3 = vec3.fromValues(xdist, ydist, zdist);
             vec3.add(translationVector3, translationVector3, vec3.fromValues(tempsection.translateweight, tempsection.translateheight + moveup, tempsection.translatedepth));
             let scalingVector3 = vec3.fromValues(supportwidth, (tempsection.translateheight + moveup - tempsection.halfheight) * 0.5, supportwidth);
-            this.createcube(indices, positions, normals, scalingVector3, translationVector3, 0.0);
+            this.createcube(this.support.indices, this.support.positions, this.support.normals, scalingVector3, translationVector3, 0.0);
           }
         }
 

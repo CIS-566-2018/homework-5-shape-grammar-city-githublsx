@@ -8,13 +8,17 @@ import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
 import {setGL} from './globals';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
+import Objs from './geometry/Objs';
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
 const controls = {
   tesselations: 6,
   'Load Scene': loadScene, // A function pointer, essentially
-  color: [164, 167, 179],
+  color: [185, 165, 148],
+  color2: [85, 80, 75],
+  color3: [60, 59, 58],
+  color4: [117, 92, 67],
   shader: 'fun',
   drawable: 'sphere',
 };
@@ -22,6 +26,9 @@ const controls = {
 let icosphere: Icosphere;
 let square: Square;
 let cube: Cube;
+let roof: Objs;
+let ridge: Objs;
+let support: Objs;
 
 function readTextFile(file: string): string
 {
@@ -50,8 +57,14 @@ function loadScene() {
   icosphere.create();
   square = new Square(vec3.fromValues(0, 0, 0), 100, 0);
   square.create();
-  cube = new Cube(eave, vec3.fromValues(0, 0, 0));
+  roof = new Objs();
+  ridge = new Objs();
+  support = new Objs();
+  cube = new Cube(eave, vec3.fromValues(0, 0, 0), roof, ridge, support);
   cube.create();
+  roof.create();
+  ridge.create();
+  support.create();
 }
 
 function main() {
@@ -68,6 +81,9 @@ function main() {
   gui.add(controls, 'tesselations', 0, 8).step(1);
   gui.add(controls, 'Load Scene');
   gui.addColor(controls, 'color');
+  gui.addColor(controls, 'color2');
+  gui.addColor(controls, 'color3');
+  gui.addColor(controls, 'color4');
   gui.add(controls, 'shader', ['lambert','fun']);
   gui.add(controls, 'drawable', ['cube','sphere','square']);
 
@@ -130,6 +146,18 @@ function main() {
     // }
     renderer.render(camera, shader, drawable, //[icosphere,//square,cube,], 
       vec4.fromValues(controls.color[0]/255, controls.color[1]/255, controls.color[2]/255, 1), dt/1000.0);
+    stats.end();
+
+    renderer.render(camera, shader, [roof], //[icosphere,//square,cube,], 
+      vec4.fromValues(controls.color2[0]/255, controls.color2[1]/255, controls.color2[2]/255, 1), dt/1000.0);
+    stats.end();
+
+    renderer.render(camera, shader, [ridge], //[icosphere,//square,cube,], 
+      vec4.fromValues(controls.color3[0]/255, controls.color3[1]/255, controls.color3[2]/255, 1), dt/1000.0);
+    stats.end();
+
+    renderer.render(camera, shader, [support], //[icosphere,//square,cube,], 
+      vec4.fromValues(controls.color4[0]/255, controls.color4[1]/255, controls.color4[2]/255, 1), dt/1000.0);
     stats.end();
 
     renderer.render(camera, shader, [square], //[icosphere,//square,cube,], 

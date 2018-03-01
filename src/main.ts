@@ -16,13 +16,13 @@ const controls = {
   tesselations: 6,
   'Load Scene': loadScene, // A function pointer, essentially
   color: [225, 218, 207],
-  color2: [71, 73, 80],
-  color3: [60, 59, 58],
-  color4: [117, 92, 67],
-  color5: [140, 132, 100],
-  color6: [89, 54, 0],
-  color7: [93, 187, 116],//[215, 183, 208],
-  color8: [225, 117, 94],
+  roofcolor1: [48, 48, 49], //[71, 73, 80],
+  ridgecolor: [60, 59, 58],
+  woodcolor: [117, 92, 67],
+  groundcolor: [140, 132, 100],
+  branchcolor: [89, 54, 0],
+  leavescolor1: [93, 187, 116], //[215, 183, 208],
+  roofcolor2: [142, 144, 145], //[225, 117, 94],
   shader: 'fun',
   drawable: 'sphere',
   minroof: 1.0,
@@ -62,6 +62,10 @@ var branch1 = readTextFile("./src/mesh/branch1.obj");
 var branch2 = readTextFile("./src/mesh/branch2.obj");
 var leaves1 = readTextFile("./src/mesh/leaves1.obj");
 var leaves2 = readTextFile("./src/mesh/leaves2.obj");
+var riverfront = readTextFile("./src/mesh/riverfront.obj");
+var riverleft = readTextFile("./src/mesh/riverleft.obj");
+var riverright = readTextFile("./src/mesh/riverright.obj");
+//var test2 = readTextFile("./src/mesh/test2.obj");
 
 function loadScene() {
   icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, controls.tesselations);
@@ -73,7 +77,7 @@ function loadScene() {
   support = new Objs();
   branches = new Objs();
   leaves = new Objs();
-  cube = new Cube(branch1, branch2, leaves1, leaves2, eave, vec3.fromValues(0, 0, 0), 
+  cube = new Cube(riverfront, riverleft, riverright, branch1, branch2, leaves1, leaves2, eave, vec3.fromValues(0, 0, 0), 
         roof, ridge, support, branches, leaves);
   cube.create();
   roof.create();
@@ -98,13 +102,13 @@ function main() {
   gui.add(controls, 'minroof', -5.0, 5.0).step(0.01);
   gui.add(controls, 'Load Scene');
   gui.addColor(controls, 'color');
-  gui.addColor(controls, 'color2');
-  gui.addColor(controls, 'color3');
-  gui.addColor(controls, 'color4');
-  gui.addColor(controls, 'color5');
-  gui.addColor(controls, 'color6');
-  gui.addColor(controls, 'color7');
-  gui.addColor(controls, 'color8');
+  gui.addColor(controls, 'roofcolor1');
+  gui.addColor(controls, 'ridgecolor');
+  gui.addColor(controls, 'woodcolor');
+  gui.addColor(controls, 'groundcolor');
+  gui.addColor(controls, 'branchcolor');
+  gui.addColor(controls, 'leavescolor1');
+  gui.addColor(controls, 'roofcolor2');
   gui.add(controls, 'shader', ['lambert','fun']);
   gui.add(controls, 'drawable', ['cube','sphere','square']);
 
@@ -170,29 +174,29 @@ function main() {
     // {
     //   drawable = [icosphere];
     // }
-    lambert3.setGeometryColor2(vec4.fromValues(controls.color8[0]/255, controls.color8[1]/255, controls.color8[2]/255, 1));
+    lambert3.setGeometryColor2(vec4.fromValues(controls.roofcolor2[0]/255, controls.roofcolor2[1]/255, controls.roofcolor2[2]/255, 1));
     lambert3.setMaxRoof(cube.maxroof);
     lambert3.setMinRoof(controls.minroof);
     renderer.render(camera, shader, drawable, //[icosphere,//square,cube,], 
       vec4.fromValues(controls.color[0]/255, controls.color[1]/255, controls.color[2]/255, 1), dt/1000.0);
 
     renderer.render(camera, lambert3, [roof], //[icosphere,//square,cube,], 
-      vec4.fromValues(controls.color2[0]/255, controls.color2[1]/255, controls.color2[2]/255, 1), dt/1000.0);
+      vec4.fromValues(controls.roofcolor1[0]/255, controls.roofcolor1[1]/255, controls.roofcolor1[2]/255, 1), dt/1000.0);
 
     renderer.render(camera, shader, [ridge], //[icosphere,//square,cube,], 
-      vec4.fromValues(controls.color3[0]/255, controls.color3[1]/255, controls.color3[2]/255, 1), dt/1000.0);
+      vec4.fromValues(controls.ridgecolor[0]/255, controls.ridgecolor[1]/255, controls.ridgecolor[2]/255, 1), dt/1000.0);
 
     renderer.render(camera, shader, [support], //[icosphere,//square,cube,], 
-      vec4.fromValues(controls.color4[0]/255, controls.color4[1]/255, controls.color4[2]/255, 1), dt/1000.0);
+      vec4.fromValues(controls.woodcolor[0]/255, controls.woodcolor[1]/255, controls.woodcolor[2]/255, 1), dt/1000.0);
 
     renderer.render(camera, shader, [branches], //[icosphere,//square,cube,], 
-      vec4.fromValues(controls.color6[0]/255, controls.color6[1]/255, controls.color6[2]/255, 1), dt/1000.0);
+      vec4.fromValues(controls.branchcolor[0]/255, controls.branchcolor[1]/255, controls.branchcolor[2]/255, 1), dt/1000.0);
 
     renderer.render(camera, shader, [leaves], //[icosphere,//square,cube,], 
-      vec4.fromValues(controls.color7[0]/255, controls.color7[1]/255, controls.color7[2]/255, 1), dt/1000.0);
+      vec4.fromValues(controls.leavescolor1[0]/255, controls.leavescolor1[1]/255, controls.leavescolor1[2]/255, 1), dt/1000.0);
 
     renderer.render(camera, shader, [square], //[icosphere,//square,cube,], 
-      vec4.fromValues(controls.color5[0]/255, controls.color5[1]/255, controls.color5[2]/255, 1), dt/1000.0);
+      vec4.fromValues(controls.groundcolor[0]/255, controls.groundcolor[1]/255, controls.groundcolor[2]/255, 1), dt/1000.0);
     stats.end();
 
     // Tell the browser to call `tick` again whenever it renders a new frame

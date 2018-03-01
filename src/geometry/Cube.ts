@@ -74,21 +74,50 @@ class Cube extends Drawable {
   riverleftstring: string;
   riverleftmesh: any;
 
-  riverrightstring: string;
-  riverrightmesh: any;
+  roadstring: string;
+  roadmesh: any;
+
+  bridgestartstring: string;
+  bridgestartmesh: any;
+
+  bridgestring: string;
+  bridgemesh: any;
+
+  bridgeinterstring: string;
+  bridgeintermesh: any
+
+  roadfacestring: string;
+  roadfacemesh: any;
+
+  bridgefacestartstring: string;
+  bridgefacestartmesh: any;
+
+  bridgefacestring: string;
+  bridgefacemesh: any;
+
+  bridgefaceinterstring: string;
+  bridgefaceintermesh: any
+
 
   roof: Objs;
   ridge: Objs;
   support: Objs;
   branches: Objs;
   leaves: Objs;
+  river: Objs;
+  edge: Objs;
+  face: Objs;
 
   maxroof: number = 0;
   minroof: number = 100.0;
 
-  constructor(riverfrontstring: string, riverleftstring: string, riverrightstring: string, 
+  constructor(riverfrontstring: string, riverleftstring: string, 
+    roadstring: string, bridgestartstring: string, bridgestring: string, bridgeinterstring: string, 
+    roadstringface: string, bridgestartstringface: string, bridgestringface: string, bridgeinterstringface: string,
     branch1tring: string, branch2tring: string, leaves1tring: string, leaves2tring: string, eavestring: string, 
-    center: vec3, roof: Objs, ridge: Objs, support: Objs, branches: Objs, leaves: Objs) {
+    center: vec3, roof: Objs, ridge: Objs, support: Objs, 
+    branches: Objs, leaves: Objs, river: Objs,
+    edge: Objs, face: Objs) {
     super(); // Call the constructor of the super class. This is required.
     this.center = vec4.fromValues(center[0], center[1], center[2], 1);
     this.eavestring = eavestring;
@@ -108,10 +137,30 @@ class Cube extends Drawable {
     this.riverfrontmesh = new OBJLOADER.Mesh(this.riverfrontstring); 
     this.riverleftstring = riverleftstring;
     this.riverleftmesh = new OBJLOADER.Mesh(this.riverleftstring); 
-    this.riverrightstring = riverrightstring;
-    this.riverrightmesh = new OBJLOADER.Mesh(this.riverrightstring); 
+
+    this.roadstring = roadstring;
+    this.roadmesh = new OBJLOADER.Mesh(this.roadstring); 
+    this.bridgestartstring = bridgestartstring;
+    this.bridgestartmesh = new OBJLOADER.Mesh(this.bridgestartstring); 
+    this.bridgestring = bridgestring;
+    this.bridgemesh = new OBJLOADER.Mesh(this.bridgestring); 
+    this.bridgeinterstring = bridgeinterstring;
+    this.bridgeintermesh = new OBJLOADER.Mesh(this.bridgeinterstring); 
+
+    this.roadfacestring = roadstringface;
+    this.roadfacemesh = new OBJLOADER.Mesh(this.roadfacestring); 
+    this.bridgefacestartstring = bridgestartstringface;
+    this.bridgefacestartmesh = new OBJLOADER.Mesh(this.bridgefacestartstring); 
+    this.bridgefacestring = bridgestringface;
+    this.bridgefacemesh = new OBJLOADER.Mesh(this.bridgefacestring); 
+    this.bridgefaceinterstring = bridgeinterstringface;
+    this.bridgefaceintermesh = new OBJLOADER.Mesh(this.bridgefaceinterstring);
+
     this.branches = branches;
     this.leaves = leaves;
+    this.river = river;
+    this.edge = edge;
+    this.face = face;
   }
 
   pushnormal(numberarray: number[], vector: vec4)
@@ -675,7 +724,8 @@ class Cube extends Drawable {
 
         //transform it into balcony
         //balconyrailingheight < tempsection.halfheight
-        if(!tempsection.isroot && balconyrailingheight < tempsection.halfheight && Math.random()<randomness2)
+        //shoud not be a up generated section
+        if(!tempsection.upgenerated && !tempsection.isroot && balconyrailingheight < tempsection.halfheight && Math.random()<randomness2)
         {
           //is a balcony
           tempsection.intobaclony = true;
@@ -933,6 +983,132 @@ class Cube extends Drawable {
     }
   }
 
+  createbridge(j: number, totalnumber: number, halfrange: number, symbols: Array<Array<Symbol>>)
+  {
+    
+    //road 1
+    var roadi = 0;
+    var roadj = j;
+
+    while(roadi < totalnumber)
+    {
+      let bigi = -halfrange + roadi * 2.5;
+      let bigj = -halfrange + roadj * 2.5;
+      let riverscalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+      let rivertranslationVector = vec3.fromValues(bigi, 0.0, bigj);
+      //end of the bridge
+      if(roadi - 1 >= 0 && symbols[roadi-1][roadj].mark == 8 && symbols[roadi][roadj].mark!=6)
+      {
+        if(roadi + 1 < totalnumber && symbols[roadi+1][roadj].mark == 6)//still a bridge
+        {
+          this.createobj(this.bridgeintermesh, this.edge.indices, this.edge.positions, this.edge.normals, riverscalingVector, rivertranslationVector, Math.PI);
+          this.createobj(this.bridgefaceintermesh, this.face.indices, this.face.positions, this.face.normals, riverscalingVector, rivertranslationVector, Math.PI);
+          symbols[roadi][roadj].mark = 8;
+        }
+        else
+        {
+          this.createobj(this.bridgestartmesh, this.edge.indices, this.edge.positions, this.edge.normals, riverscalingVector, rivertranslationVector, Math.PI);
+          this.createobj(this.bridgefacestartmesh, this.face.indices, this.face.positions, this.face.normals, riverscalingVector, rivertranslationVector, Math.PI);
+          symbols[roadi][roadj].mark = 7;
+        }
+      }
+      //over the bridge
+      else if(symbols[roadi][roadj].mark == 6)
+      {
+        this.createobj(this.bridgemesh, this.edge.indices, this.edge.positions, this.edge.normals, riverscalingVector, rivertranslationVector, 0);
+        this.createobj(this.bridgefacemesh, this.face.indices, this.face.positions, this.face.normals, riverscalingVector, rivertranslationVector, 0);
+        symbols[roadi][roadj].mark = 8;
+      }
+      //start of the bridge
+      else if(roadi + 1 < totalnumber && symbols[roadi][roadj].mark != 6 && symbols[roadi+1][roadj].mark==6)
+      {
+        {
+          this.createobj(this.bridgestartmesh, this.edge.indices, this.edge.positions, this.edge.normals, riverscalingVector, rivertranslationVector, 0);
+          this.createobj(this.bridgefacestartmesh, this.face.indices, this.face.positions, this.face.normals, riverscalingVector, rivertranslationVector, 0);
+          symbols[roadi][roadj].mark = 7;
+        }
+      }
+      //road
+      else
+      {
+        this.createobj(this.roadmesh, this.edge.indices, this.edge.positions, this.edge.normals, riverscalingVector, rivertranslationVector, 0.0);
+        this.createobj(this.roadfacemesh, this.face.indices, this.face.positions, this.face.normals, riverscalingVector, rivertranslationVector, 0.0);
+        symbols[roadi][roadj].mark = 7;
+      }
+      roadi++;
+    }
+
+    roadi = 0;
+    while(roadi < totalnumber)
+    {
+      symbols[roadi][roadj].mark = 7;
+      roadi++;
+    }
+  }
+
+  createbridge2(i: number, totalnumber: number, halfrange: number, symbols: Array<Array<Symbol>>)
+  {
+    
+    //road 1
+    var roadi = i;
+    var roadj = 0;
+
+    while(roadj < totalnumber)
+    {
+      let bigi = -halfrange + roadi * 2.5;
+      let bigj = -halfrange + roadj * 2.5;
+      let riverscalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+      let rivertranslationVector = vec3.fromValues(bigi, 0.0, bigj);
+      //end of the bridge
+      if(roadj - 1 >= 0 && symbols[roadi][roadj-1].mark == 8 && symbols[roadi][roadj].mark!=6)
+      {
+        if(roadj + 1 < totalnumber && symbols[roadi][roadj+1].mark == 6)//still a bridge
+        {
+          this.createobj(this.bridgeintermesh, this.edge.indices, this.edge.positions, this.edge.normals, riverscalingVector, rivertranslationVector, 1/2 * Math.PI);
+          this.createobj(this.bridgefaceintermesh, this.face.indices, this.face.positions, this.face.normals, riverscalingVector, rivertranslationVector, 1/2 * Math.PI);
+          symbols[roadi][roadj].mark = 8;
+        }
+        else
+        {
+          this.createobj(this.bridgestartmesh, this.edge.indices, this.edge.positions, this.edge.normals, riverscalingVector, rivertranslationVector, 1/2 * Math.PI);
+          this.createobj(this.bridgefacestartmesh, this.face.indices, this.face.positions, this.face.normals, riverscalingVector, rivertranslationVector, 1/2 * Math.PI);
+          symbols[roadi][roadj].mark = 7;
+        }
+      }
+      //over the bridge
+      else if(symbols[roadi][roadj].mark == 6)
+      {
+        this.createobj(this.bridgemesh, this.edge.indices, this.edge.positions, this.edge.normals, riverscalingVector, rivertranslationVector, 1/2 * Math.PI);
+        this.createobj(this.bridgefacemesh, this.face.indices, this.face.positions, this.face.normals, riverscalingVector, rivertranslationVector, 1/2 * Math.PI);
+        symbols[roadi][roadj].mark = 8;
+      }
+      //start of the bridge
+      else if(roadj + 1 < totalnumber && symbols[roadi][roadj].mark != 6 && symbols[roadi][roadj+1].mark==6)
+      {
+        {
+          this.createobj(this.bridgestartmesh, this.edge.indices, this.edge.positions, this.edge.normals, riverscalingVector, rivertranslationVector, 3/2 * Math.PI);
+          this.createobj(this.bridgefacestartmesh, this.face.indices, this.face.positions, this.face.normals, riverscalingVector, rivertranslationVector, 3/2 * Math.PI);
+          symbols[roadi][roadj].mark = 7;
+        }
+      }
+      //road
+      else
+      {
+        this.createobj(this.roadmesh, this.edge.indices, this.edge.positions, this.edge.normals, riverscalingVector, rivertranslationVector, 1/2 * Math.PI);
+        this.createobj(this.roadfacemesh, this.face.indices, this.face.positions, this.face.normals, riverscalingVector, rivertranslationVector, 1/2 * Math.PI);
+        symbols[roadi][roadj].mark = 7;
+      }
+      roadj++;
+    }
+
+    roadj = 0;
+    while(roadj < totalnumber)
+    {
+      symbols[roadi][roadj].mark = 7;
+      roadj++;
+    }
+  }
+
   fract(x: number)
   {
     return x - Math.floor(x);
@@ -1008,9 +1184,10 @@ class Cube extends Drawable {
       symbols[i][j] = new Symbol();
     }
   }
+
   //river
   var ri = 1;
-  var rj = Math.floor(Math.random() * totalnumber)-1;
+  var rj = Math.floor((Math.random() * 1/2 + 1/4) * totalnumber)-1;
   //symbols[ri][rj].mark = 6;
   console.log("rj"+rj);
   //can to right or to left
@@ -1019,13 +1196,10 @@ class Cube extends Drawable {
   //for tiles
   var direction = 0;
   var tile = 0;
-  //for world
   var riverrad = 0.0;
-  //var tempindex = 0.0
   while(ri<totalnumber-1 && ri>=1 && rj<totalnumber-1 && rj>=1)
   {
     symbols[ri][rj].mark = 6;
-    //tempindex++;
     //record ri and rj
     let oldri = ri;
     let oldrj = rj;
@@ -1091,81 +1265,57 @@ class Cube extends Drawable {
       let rivertranslationVector = vec3.fromValues(bigi, 0.0, bigj);
       if(tile == 0)
       {
-        this.createobj(this.riverfrontmesh, this.branches.indices, this.branches.positions, this.branches.normals, riverscalingVector, rivertranslationVector, 0);      
+        this.createobj(this.riverfrontmesh, this.river.indices, this.river.positions, this.river.normals, riverscalingVector, rivertranslationVector, 0);  
+        let rivertreerandomness = 1.05 * ((Math.ceil(Math.random() * 2))-1.5)*2;
+        let rivertreetanslationVector = vec3.fromValues(bigi + Math.random(), 0.0, bigj + rivertreerandomness);
+        this.createobj(this.branch1mesh, this.branches.indices, this.branches.positions, this.branches.normals, riverscalingVector, rivertreetanslationVector, Math.random() * 2 * Math.PI);
+        this.createobj(this.leaves1mesh, this.leaves.indices, this.leaves.positions, this.leaves.normals, riverscalingVector, rivertreetanslationVector, Math.random() * 2 * Math.PI);
       }
       else if(tile == 1)
       {
-        this.createobj(this.riverfrontmesh, this.branches.indices, this.branches.positions, this.branches.normals, riverscalingVector, rivertranslationVector, 1/2 * Math.PI); 
+        this.createobj(this.riverfrontmesh, this.river.indices, this.river.positions, this.river.normals, riverscalingVector, rivertranslationVector, 1/2 * Math.PI);
+        let rivertreerandomness = 1.05 * ((Math.ceil(Math.random() * 2))-1.5)*2;
+        let rivertreetanslationVector = vec3.fromValues(bigi + rivertreerandomness, 0.0, bigj + Math.random());
+        this.createobj(this.branch1mesh, this.branches.indices, this.branches.positions, this.branches.normals, riverscalingVector, rivertreetanslationVector, Math.random() * 2 * Math.PI);
+        this.createobj(this.leaves1mesh, this.leaves.indices, this.leaves.positions, this.leaves.normals, riverscalingVector, rivertreetanslationVector, Math.random() * 2 * Math.PI); 
       }
       else if(tile == 2)
       {
-        this.createobj(this.riverleftmesh, this.branches.indices, this.branches.positions, this.branches.normals, riverscalingVector, rivertranslationVector, -1/2 * Math.PI); 
+        this.createobj(this.riverleftmesh, this.river.indices, this.river.positions, this.river.normals, riverscalingVector, rivertranslationVector, -1/2 * Math.PI); 
       }
       else if(tile == 3)
       {
-        this.createobj(this.riverleftmesh, this.branches.indices, this.branches.positions, this.branches.normals, riverscalingVector, rivertranslationVector, 0); 
+        this.createobj(this.riverleftmesh, this.river.indices, this.river.positions, this.river.normals, riverscalingVector, rivertranslationVector, 0); 
       }
       else if(tile == 4)
       {
-        this.createobj(this.riverleftmesh, this.branches.indices, this.branches.positions, this.branches.normals, riverscalingVector, rivertranslationVector, 1/2 * Math.PI); 
+        this.createobj(this.riverleftmesh, this.river.indices, this.river.positions, this.river.normals, riverscalingVector, rivertranslationVector, 1/2 * Math.PI); 
       }
       else if(tile == 5)
       {
-        this.createobj(this.riverleftmesh, this.branches.indices, this.branches.positions, this.branches.normals, riverscalingVector, rivertranslationVector, Math.PI); 
+        this.createobj(this.riverleftmesh, this.river.indices, this.river.positions, this.river.normals, riverscalingVector, rivertranslationVector, Math.PI); 
       }
-      // else if(toleft)
-      // {
-      //   this.createobj(this.riverleftmesh, this.branches.indices, this.branches.positions, this.branches.normals, riverscalingVector, rivertranslationVector, riverrad); 
-      // }
     }
-    
-
-    
-    // let randomroad = Math.random();
-    // if(randomroad<0.33 && symbols[ri+1][rj].mark!=6)
-    // {
-      
-    //   let bigi = -halfrange + ri * 2.5;
-    //   let bigj = -halfrange + rj * 2.5;
-    //   let riverscalingVector = vec3.fromValues(1.0, 1.0, 1.0);
-    //   let rivertranslationVector = vec3.fromValues(bigi, 0.0, bigj);
-
-    //   ri++;
-    //   rjplus = false;
-    //   rjminus = false;
-
-
-    //   this.createobj(this.riverfrontmesh, this.branches.indices, this.branches.positions, this.branches.normals, riverscalingVector, rivertranslationVector, riverrad);
-    // }
-    // else if(randomroad>=0.33 && randomroad<0.66 && rjminus == false && symbols[ri][rj+1].mark!=6)
-    // {
-    //   let bigi = -halfrange + ri * 2.5;
-    //   let bigj = -halfrange + rj * 2.5;
-    //   let riverscalingVector = vec3.fromValues(1.0, 1.0, 1.0);
-    //   let rivertranslationVector = vec3.fromValues(bigi, 0.0, bigj);
-
-    //   rj++;
-    //   rjplus = true;
-    //   rjminus = false;
-
-    //   this.createobj(this.riverrightmesh, this.branches.indices, this.branches.positions, this.branches.normals, riverscalingVector, rivertranslationVector, riverrad);
-    //   riverrad -= 1/2 * Math.PI;
-    // }
-    // else if(rjplus == false && symbols[ri][rj-1].mark!=6)
-    // {
-    //   let bigi = -halfrange + (ri) * 2.5;
-    //   let bigj = -halfrange + (rj+1) * 2.5;
-    //   let riverscalingVector = vec3.fromValues(1.0, 1.0, 1.0);
-    //   let rivertranslationVector = vec3.fromValues(bigi, 0.0, bigj);
-
-    //   rj--;
-    //   rjplus = false;
-    //   rjminus = true;  
-
-    //   this.createobj(this.riverleftmesh, this.branches.indices, this.branches.positions, this.branches.normals, riverscalingVector, rivertranslationVector, riverrad);    
-    //   riverrad += 1/2 * Math.PI;
-    // }
   }
+  var randomj = Math.floor(((Math.random() * 2 -1) * 1/9 + 1/3) * totalnumber);
+  this.createbridge(randomj, totalnumber, halfrange, symbols);
+
+  var randomj2 = Math.floor(((Math.random() * 2 -1) * 1/9 + 2/3) * totalnumber);
+  while(randomj2==randomj)
+  {
+    randomj2 = Math.floor(((Math.random() * 2 -1) * 1/9 + 2/3) * totalnumber);
+  }
+  this.createbridge(randomj2, totalnumber, halfrange, symbols);
+
+  var randomi = Math.floor(((Math.random() * 2 -1) * 1/9 + 1/3) * totalnumber);
+  this.createbridge2(randomi, totalnumber, halfrange, symbols);
+
+  var randomi2 = Math.floor(((Math.random() * 2 -1) * 1/9 + 2/3) * totalnumber);
+  while(randomi2==randomi)
+  {
+    randomi2 = Math.floor(((Math.random() * 2 -1) * 1/9 + 2/3) * totalnumber);
+  }
+  this.createbridge2(randomi2, totalnumber, halfrange, symbols);
 
   //perlin noise
   var randonoffsetx = Math.random() * 50.0 - 25.0;//0.1;
@@ -1181,22 +1331,23 @@ class Cube extends Drawable {
       var randomnumber = 0.5 + 2.0 * this.fbm(vec2.fromValues((i/totalnumber + randonoffsetx) * scaleofnoise, 
                                                               (j/totalnumber + randonoffsetz) * scaleofnoise));
       //console.log("randomnumber" + randomnumber);
-      if(randomnumber>=0.5 && randomnumber<mid1 && symbols[i][j].mark!=6)
+      if(randomnumber>=0.5 && randomnumber<mid1 && symbols[i][j].mark!=6 && symbols[i][j].mark!=7)
       {
         let symbol = new Symbol(0, randomnumber);
         symbols[i][j] = symbol;
       }
-      else if(randomnumber>=mid1 && randomnumber<mid2 && symbols[i][j].mark!=6)
+      else if(randomnumber>=mid1 && randomnumber<mid2 && symbols[i][j].mark!=6 && symbols[i][j].mark!=7)
       {
         let symbol = new Symbol(1, randomnumber);
         symbols[i][j] = symbol;
       }
-      else if(randomnumber>=mid2 && randomnumber<0.5 + 2.0 && symbols[i][j].mark!=6)
+      else if(randomnumber>=mid2 && randomnumber<0.5 + 2.0 && symbols[i][j].mark!=6 && symbols[i][j].mark!=7)
       {
         let symbol = new Symbol(2, randomnumber);
         symbols[i][j] = symbol;
         if(i-1>=0 && j-1>=0 && symbols[i-1][j].mark!=-2 && symbols[i][j-1].mark!=-2 && symbols[i-1][j-1].mark!=-2
-          && symbols[i-1][j].mark!=6 && symbols[i][j-1].mark!=6 && symbols[i-1][j-1].mark!=6)
+          && symbols[i-1][j].mark!=6 && symbols[i][j-1].mark!=6 && symbols[i-1][j-1].mark!=6
+          && symbols[i-1][j].mark!=7 && symbols[i][j-1].mark!=7 && symbols[i-1][j-1].mark!=7)
         {
           symbols[i-1][j].mark = -2;
           symbols[i-1][j].randomness = randomnumber;

@@ -23,6 +23,9 @@ const controls = {
   branchcolor: [89, 54, 0],
   leavescolor1: [93, 187, 116], //[215, 183, 208],
   roofcolor2: [142, 144, 145], //[225, 117, 94],
+  rivercolor: [120, 183, 215],
+  roadfacecolor: [215, 188, 139],
+  roadedgecolor: [137, 106, 78],
   shader: 'fun',
   drawable: 'sphere',
   minroof: 1.0,
@@ -36,6 +39,9 @@ let ridge: Objs;
 let support: Objs;
 let branches: Objs;
 let leaves: Objs;
+let river: Objs;
+let edge: Objs;
+let face: Objs;
 
 function readTextFile(file: string): string
 {
@@ -64,7 +70,14 @@ var leaves1 = readTextFile("./src/mesh/leaves1.obj");
 var leaves2 = readTextFile("./src/mesh/leaves2.obj");
 var riverfront = readTextFile("./src/mesh/riverfront.obj");
 var riverleft = readTextFile("./src/mesh/riverleft.obj");
-var riverright = readTextFile("./src/mesh/riverright.obj");
+var road = readTextFile("./src/mesh/roadedge.obj");
+var bridgestart = readTextFile("./src/mesh/bridgestartedge.obj");
+var bridge = readTextFile("./src/mesh/bridgeedge.obj");
+var bridgeinter = readTextFile("./src/mesh/bridgeinteredge.obj");
+var roadface = readTextFile("./src/mesh/roadface.obj");
+var bridgestartface = readTextFile("./src/mesh/bridgestartface.obj");
+var bridgeface = readTextFile("./src/mesh/bridgeface.obj");
+var bridgeinterface = readTextFile("./src/mesh/bridgeinterface.obj");
 //var test2 = readTextFile("./src/mesh/test2.obj");
 
 function loadScene() {
@@ -77,14 +90,24 @@ function loadScene() {
   support = new Objs();
   branches = new Objs();
   leaves = new Objs();
-  cube = new Cube(riverfront, riverleft, riverright, branch1, branch2, leaves1, leaves2, eave, vec3.fromValues(0, 0, 0), 
-        roof, ridge, support, branches, leaves);
+  river = new Objs();
+  edge = new Objs();
+  face = new Objs();
+  cube = new Cube(riverfront, riverleft, 
+    road, bridgestart, bridge, bridgeinter, 
+    roadface, bridgestartface, bridgeface, bridgeinterface,
+    branch1, branch2, leaves1, leaves2, 
+    eave, vec3.fromValues(0, 0, 0), 
+    roof, ridge, support, branches, leaves, river, edge, face);
   cube.create();
   roof.create();
   ridge.create();
   support.create();
   branches.create();
   leaves.create();
+  river.create();
+  edge.create();
+  face.create();
 }
 
 function main() {
@@ -109,6 +132,9 @@ function main() {
   gui.addColor(controls, 'branchcolor');
   gui.addColor(controls, 'leavescolor1');
   gui.addColor(controls, 'roofcolor2');
+  gui.addColor(controls, 'rivercolor');
+  gui.addColor(controls, 'roadfacecolor');
+  gui.addColor(controls, 'roadedgecolor');
   gui.add(controls, 'shader', ['lambert','fun']);
   gui.add(controls, 'drawable', ['cube','sphere','square']);
 
@@ -194,6 +220,15 @@ function main() {
 
     renderer.render(camera, shader, [leaves], //[icosphere,//square,cube,], 
       vec4.fromValues(controls.leavescolor1[0]/255, controls.leavescolor1[1]/255, controls.leavescolor1[2]/255, 1), dt/1000.0);
+
+    renderer.render(camera, shader, [river], //[icosphere,//square,cube,], 
+      vec4.fromValues(controls.rivercolor[0]/255, controls.rivercolor[1]/255, controls.rivercolor[2]/255, 1), dt/1000.0);
+
+    renderer.render(camera, shader, [edge], //[icosphere,//square,cube,], 
+      vec4.fromValues(controls.roadedgecolor[0]/255, controls.roadedgecolor[1]/255, controls.roadedgecolor[2]/255, 1), dt/1000.0);
+
+    renderer.render(camera, shader, [face], //[icosphere,//square,cube,], 
+      vec4.fromValues(controls.roadfacecolor[0]/255, controls.roadfacecolor[1]/255, controls.roadfacecolor[2]/255, 1), dt/1000.0); 
 
     renderer.render(camera, shader, [square], //[icosphere,//square,cube,], 
       vec4.fromValues(controls.groundcolor[0]/255, controls.groundcolor[1]/255, controls.groundcolor[2]/255, 1), dt/1000.0);

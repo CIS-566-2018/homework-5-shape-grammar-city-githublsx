@@ -1,0 +1,20 @@
+# This file uses centimeters as units for non-parametric coordinates.
+
+mtllib roadface.mtl
+g default
+v -1.250000 0.172930 -0.488105
+v -1.250000 0.172930 0.488105
+v 1.250000 0.172930 0.488105
+v 1.250000 0.172930 -0.488105
+vt 0.458333 0.250000
+vt 0.541667 0.250000
+vt 0.541667 0.500000
+vt 0.458333 0.500000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+vn 0.000000 1.000000 0.000000
+s off
+g polySurface8 road:pCube9
+usemtl road:initialShadingGroup
+f 1/1/1 2/2/2 3/3/3 4/4/4

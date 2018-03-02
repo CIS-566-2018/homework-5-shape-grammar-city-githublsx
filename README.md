@@ -33,8 +33,8 @@ Shape grammar rules:
 
 - If it is a new cube, then random face(*along x, y, or z axis with random possibility*) besides the face that has been occupied by other cubes can generate new cubes(*child geometry*), the new generated cube's position will be decided by the combination of width/depth/height and the translation of the original cube(nearly all following rules *use some property about the geometry's location* to generate new ones) the corresponding opposite surface of the new generated cube can't generate more cubes;
 - If it is a cube, then it should have a roof, which is a scaled triangular pillar;
-- If it is not a root cube, then it can become a balcony;
-- If it is a attached generated cube, then it should have support pillars to the ground;
+- If it is not a root cube, then it can become a balcony; If the cube becomes a balcony, the cube itself will not be rendered, which will be replaced by pillars, railings and stage; Also, a balcony can't generate more new attached new cubes;
+- If it is a attached generated cube, then it should have support stage and pillars to the ground; The number of the pillars will be decided by ceil(width or depth/step);
 - If there is a roof, then it should have some extension on ridge and hip;
 - If there is a roof, then it should have ridge and decorations on the ridge;
 - If the width/depth of the new generated cube plus the width/depth of the original cube is larger some of the bounding box attributes, then just use the minus of bounding box and the width/depth of the original cube as the new width/depth, and this new generated cube can't generate more cubes on this surface;

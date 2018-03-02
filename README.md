@@ -40,7 +40,7 @@ Shape grammar rules:
 - If the width/depth of the new generated cube plus the width/depth of the original cube is larger some of the bounding box attributes, then just use the minus of bounding box and the width/depth of the original cube as the new width/depth, and this new generated cube can't generate more cubes on this surface;
 - After the section's geometry, scaling, translation, rotation and other attributes has been decided, a renderer will interpret the results of the shape grammar parsers and adds the appropriate geometry to the scene for each section.
 
-### Create a city (30 points)
+### Create a city
 - A ground plane has been added to your scene, its scale is decided by the total scale of the city;
 - The base of the city is still grid, But the buildings and trees are distributed procedurally by Perlin noise. I decide the randomness of each grid by its coordinate through [Fractal Brownian Motion function](https://thebookofshaders.com/13/), which is 0 ~ 1. 
     - If the randomness smaller than 1/3, then it should be covered with trees; 

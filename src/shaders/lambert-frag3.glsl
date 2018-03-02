@@ -13,7 +13,8 @@ precision highp float;
 
 uniform vec4 u_Color; // The color with which to render this instance of geometry.
 uniform vec4 u_Color2;
-
+uniform vec4 u_Color3;
+uniform float u_FogDensity;
 // These are the interpolated values out of the rasterizer, so you can't know
 // their specific values without knowing the vertices that contributed to them
 in vec4 fs_Nor;
@@ -23,8 +24,8 @@ in float fs_DistoCam;
 in float fs_ratio;
 out vec4 out_Col; // This is the final output color that you will see on your
                   // screen for the pixel that is currently being processed.
-vec4 fogColor = vec4(0.9, 0.9, 0.85, 1.0);
-const float fogdensity = .0005;
+//vec4 fogColor = vec4(0.9, 0.9, 0.85, 1.0);
+//const float fogdensity = .0005;
 
 vec3 applyFog( in vec3  rgb,       // original color of the pixel
                in float distance ) // camera to point distance
@@ -51,9 +52,9 @@ void main()
                                                             //to simulate ambient lighting. This ensures that faces that are not
                                                             //lit by our point light are not completely black.
         float z = gl_FragCoord.z / gl_FragCoord.w;
-        float fog = clamp(exp(-fogdensity * z * z), 0.2, 1.0);
+        float fog = clamp(exp(-.0005 * u_FogDensity * z * z), 0.2, 1.0);
 
         // Compute final shaded color
         out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
-        out_Col =  mix(fogColor, out_Col, fog); 
+        out_Col =  mix(u_Color3, out_Col, fog); 
 }

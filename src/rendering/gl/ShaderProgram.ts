@@ -30,12 +30,15 @@ class ShaderProgram {
   unifViewProj: WebGLUniformLocation;
   unifColor: WebGLUniformLocation;
   unifColor2: WebGLUniformLocation;
+  unifColor3: WebGLUniformLocation;
 
   unifTime: WebGLUniformLocation;
   unifCameraPos: WebGLUniformLocation;
 
   unifMaxRoof: WebGLUniformLocation;
   unifMinRoof: WebGLUniformLocation;
+
+  unifFogDensity: WebGLUniformLocation;
 
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
@@ -56,10 +59,12 @@ class ShaderProgram {
     this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
     this.unifColor      = gl.getUniformLocation(this.prog, "u_Color");
     this.unifColor2      = gl.getUniformLocation(this.prog, "u_Color2");
+    this.unifColor3      = gl.getUniformLocation(this.prog, "u_Color3");
     this.unifTime       = gl.getUniformLocation(this.prog, "u_Time");
     this.unifCameraPos       = gl.getUniformLocation(this.prog, "u_Camerapos");
     this.unifMaxRoof       = gl.getUniformLocation(this.prog, "u_MaxRoof");
     this.unifMinRoof       = gl.getUniformLocation(this.prog, "u_MinRoof");
+    this.unifFogDensity       = gl.getUniformLocation(this.prog, "u_FogDensity");
   }
 
   use() {
@@ -104,6 +109,13 @@ class ShaderProgram {
     }
   }
 
+  setGeometryColor3(color3: vec4) {
+    this.use();
+    if (this.unifColor3 !== -1) {
+      gl.uniform4fv(this.unifColor3, color3);
+    }
+  }
+
   setTime(time: number) {
     this.use();
     if (this.unifTime !== -1) {
@@ -129,6 +141,13 @@ class ShaderProgram {
     this.use();
     if (this.unifMinRoof !== -1) {
       gl.uniform1f(this.unifMinRoof, time);
+    }
+  }
+
+  setFogDensity(time: number) {
+    this.use();
+    if (this.unifFogDensity!== -1) {
+      gl.uniform1f(this.unifFogDensity, time);
     }
   }
 

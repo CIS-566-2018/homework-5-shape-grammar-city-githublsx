@@ -54,50 +54,29 @@ class Cube extends Drawable {
   positions: Float32Array;
   normals: Float32Array;
   center: vec4;
-  
-  eavestring: string;
+
   eavemesh: any;
 
-  branch1tring: string;
   branch1mesh: any;
-  leaves1tring: string;
   leaves1mesh: any;
-
-  branch2tring: string;
   branch2mesh: any;
-  leaves2tring: string;
   leaves2mesh: any;
 
-  riverfrontstring: string;
   riverfrontmesh: any;
-
-  riverleftstring: string;
   riverleftmesh: any;
 
-  roadstring: string;
   roadmesh: any;
-
-  bridgestartstring: string;
   bridgestartmesh: any;
-
-  bridgestring: string;
   bridgemesh: any;
-
-  bridgeinterstring: string;
   bridgeintermesh: any
-
-  roadfacestring: string;
   roadfacemesh: any;
-
-  bridgefacestartstring: string;
   bridgefacestartmesh: any;
-
-  bridgefacestring: string;
   bridgefacemesh: any;
+  bridgefaceintermesh: any;
 
-  bridgefaceinterstring: string;
-  bridgefaceintermesh: any
-
+  wallmesh: any;
+  gatemesh: any;
+  cornerwall: any;
 
   roof: Objs;
   ridge: Objs;
@@ -107,60 +86,56 @@ class Cube extends Drawable {
   river: Objs;
   edge: Objs;
   face: Objs;
+  walls: Objs;
+
+  total: number;
 
   maxroof: number = 0;
   minroof: number = 100.0;
 
-  constructor(riverfrontstring: string, riverleftstring: string, 
+  constructor(total: number, cornerwallstring: string, gatestring: string, wallstring: string, riverfrontstring: string, riverleftstring: string, 
     roadstring: string, bridgestartstring: string, bridgestring: string, bridgeinterstring: string, 
     roadstringface: string, bridgestartstringface: string, bridgestringface: string, bridgeinterstringface: string,
     branch1tring: string, branch2tring: string, leaves1tring: string, leaves2tring: string, eavestring: string, 
     center: vec3, roof: Objs, ridge: Objs, support: Objs, 
     branches: Objs, leaves: Objs, river: Objs,
-    edge: Objs, face: Objs) {
+    edge: Objs, face: Objs, walls: Objs) {
     super(); // Call the constructor of the super class. This is required.
     this.center = vec4.fromValues(center[0], center[1], center[2], 1);
-    this.eavestring = eavestring;
-    this.eavemesh = new OBJLOADER.Mesh(this.eavestring);
+
+    this.eavemesh = new OBJLOADER.Mesh(eavestring);
+
+    this.branch1mesh = new OBJLOADER.Mesh(branch1tring); 
+    this.branch2mesh = new OBJLOADER.Mesh(branch2tring);
+    this.leaves1mesh = new OBJLOADER.Mesh(leaves1tring); 
+    this.leaves2mesh = new OBJLOADER.Mesh(leaves2tring); 
+    this.riverfrontmesh = new OBJLOADER.Mesh(riverfrontstring); 
+    this.riverleftmesh = new OBJLOADER.Mesh(riverleftstring); 
+
+    this.roadmesh = new OBJLOADER.Mesh(roadstring); 
+    this.bridgestartmesh = new OBJLOADER.Mesh(bridgestartstring); 
+    this.bridgemesh = new OBJLOADER.Mesh(bridgestring); 
+    this.bridgeintermesh = new OBJLOADER.Mesh(bridgeinterstring); 
+
+    this.roadfacemesh = new OBJLOADER.Mesh(roadstringface); 
+    this.bridgefacestartmesh = new OBJLOADER.Mesh(bridgestartstringface); 
+    this.bridgefacemesh = new OBJLOADER.Mesh(bridgestringface); 
+    this.bridgefaceintermesh = new OBJLOADER.Mesh(bridgeinterstringface);
+
+    this.gatemesh = new OBJLOADER.Mesh(gatestring);
+    this.wallmesh = new OBJLOADER.Mesh(wallstring);
+    this.cornerwall = new OBJLOADER.Mesh(cornerwallstring);
     this.roof = roof;
     this.ridge = ridge;
     this.support = support;
-    this.branch1tring = branch1tring;
-    this.branch1mesh = new OBJLOADER.Mesh(this.branch1tring); 
-    this.branch2tring = branch2tring;
-    this.branch2mesh = new OBJLOADER.Mesh(this.branch2tring);
-    this.leaves1tring = leaves1tring;
-    this.leaves1mesh = new OBJLOADER.Mesh(this.leaves1tring); 
-    this.leaves2tring = leaves2tring;
-    this.leaves2mesh = new OBJLOADER.Mesh(this.leaves2tring); 
-    this.riverfrontstring = riverfrontstring;
-    this.riverfrontmesh = new OBJLOADER.Mesh(this.riverfrontstring); 
-    this.riverleftstring = riverleftstring;
-    this.riverleftmesh = new OBJLOADER.Mesh(this.riverleftstring); 
-
-    this.roadstring = roadstring;
-    this.roadmesh = new OBJLOADER.Mesh(this.roadstring); 
-    this.bridgestartstring = bridgestartstring;
-    this.bridgestartmesh = new OBJLOADER.Mesh(this.bridgestartstring); 
-    this.bridgestring = bridgestring;
-    this.bridgemesh = new OBJLOADER.Mesh(this.bridgestring); 
-    this.bridgeinterstring = bridgeinterstring;
-    this.bridgeintermesh = new OBJLOADER.Mesh(this.bridgeinterstring); 
-
-    this.roadfacestring = roadstringface;
-    this.roadfacemesh = new OBJLOADER.Mesh(this.roadfacestring); 
-    this.bridgefacestartstring = bridgestartstringface;
-    this.bridgefacestartmesh = new OBJLOADER.Mesh(this.bridgefacestartstring); 
-    this.bridgefacestring = bridgestringface;
-    this.bridgefacemesh = new OBJLOADER.Mesh(this.bridgefacestring); 
-    this.bridgefaceinterstring = bridgeinterstringface;
-    this.bridgefaceintermesh = new OBJLOADER.Mesh(this.bridgefaceinterstring);
-
     this.branches = branches;
     this.leaves = leaves;
     this.river = river;
     this.edge = edge;
     this.face = face;
+    this.walls = walls;
+
+    this.total = total;
   }
 
   pushnormal(numberarray: number[], vector: vec4)
@@ -1170,7 +1145,7 @@ class Cube extends Drawable {
   var allsections = new Array<Section>();
 
   var step = 2.5;
-  var totalnumber = 30;
+  var totalnumber = this.total;
   var halfrange = totalnumber * step / 2.0;
   var scaleofnoise = totalnumber / 10.0;
 
@@ -1488,56 +1463,63 @@ class Cube extends Drawable {
 
   }
 
-  //  var scalingVector = vec3.fromValues(1.0, 1.0, 1.0);
-  // var translationVector = vec3.fromValues(0.0, 1.0, 0.0);
-  // this.createeave(indices, positions, normals, scalingVector, translationVector, 0);
-  
-  // var step = 4.0
-  // var ring = 50.0;
+  //add wall
+  for(let i = 0; -halfrange + i * 2.5 < halfrange; i++)
+  {
+    let wallscalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+    if(i==randomi || i==randomi2)
+    {
+      let walltranslationVector = vec3.fromValues(-halfrange + i * 2.5, 0.0, -halfrange + -1 * 2.5);
+      this.createobj(this.gatemesh, this.walls.indices, this.walls.positions, this.walls.normals, 
+        wallscalingVector, walltranslationVector, 0.0);
+      walltranslationVector = vec3.fromValues(-halfrange + i * 2.5, 0.0, -halfrange + totalnumber * 2.5);
+      this.createobj(this.gatemesh, this.walls.indices, this.walls.positions, this.walls.normals, 
+        wallscalingVector, walltranslationVector, 0.0);
+    }
+    else
+    {
+      let walltranslationVector = vec3.fromValues(-halfrange + i * 2.5, 0.0, -halfrange + -1 * 2.5);
+      this.createobj(this.wallmesh, this.walls.indices, this.walls.positions, this.walls.normals, 
+        wallscalingVector, walltranslationVector, 0.0);
+      walltranslationVector = vec3.fromValues(-halfrange + i * 2.5, 0.0, -halfrange + totalnumber * 2.5);
+      this.createobj(this.wallmesh, this.walls.indices, this.walls.positions, this.walls.normals, 
+        wallscalingVector, walltranslationVector, 0.0);
+    }
+  }
 
-  // for(let index = 1.0; index < step * ring; index+=step)
-  // {
-  //   var radius = (index-1) * 0.5;
-  //   for(let k = 0.0; k<=1.0; k+=1.0/index)
-  //   {
-  //     var rad = k * 2 * Math.PI;
-  //     var change = Math.max(5.0 - (index - 1.0)/(4.0 * ring / 4.0), 1.0);
-  //     var i = radius * Math.cos(rad) * 1.5;
-  //     var j = radius * Math.sin(rad) * 1.5;
-  //     var boundx = change;
-  //     var boundy = change;
-  //     var boundz = change;
-    
-  //     var iteration = 2.0;
-    
-  //     var halfweight = (Math.random() * 0.25 + 0.5) * boundx; // X
-  //     var halfheight = (Math.random() * 0.25 + 0.5) * boundy; // Y
-  //     var halfdepth = (Math.random() * 0.25 + 0.5) * boundz;  // Z
-    
-  //     var randomness = 0.8;
-  
-  //     var bigi = i + Math.random()-0.5;
-  //     var bigj = j + Math.random()-0.5;
-  //     var bigk = Math.max(0, (step * ring * 0.5 - radius) * (change - 1.0) * 0.3 + Math.random()-0.5);
-    
-  //     var root = new Section(halfweight, halfheight, halfdepth, bigi, bigk, bigj);
-  //     var moveup = halfheight;
-    
-  //     sections = [];
-  //     sections.push(root);
-    
-  //     var scalingVector = vec3.fromValues(1.0, 1.0, 1.0);
-  //     var translationVector = vec3.fromValues(0.0, 0.0, 0.0);
-  //     this.createcubes(indices, positions, normals, iteration, sections, allsections, moveup, randomness, boundx, boundy, boundz, bigi, bigj, -rad);
-  //   }
-  // }
+  for(let i = 0; -halfrange + i * 2.5 < halfrange; i++)
+  {
+    let wallscalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+    if(i==randomj || i==randomj2)
+    {
+      let walltranslationVector = vec3.fromValues(-halfrange + -1 * 2.5, 0.0, -halfrange + i * 2.5);
+      this.createobj(this.gatemesh, this.walls.indices, this.walls.positions, this.walls.normals, 
+        wallscalingVector, walltranslationVector, 1/2*Math.PI);
+      walltranslationVector = vec3.fromValues(-halfrange + totalnumber * 2.5, 0.0, -halfrange + i * 2.5);
+      this.createobj(this.gatemesh, this.walls.indices, this.walls.positions, this.walls.normals, 
+        wallscalingVector, walltranslationVector, 1/2*Math.PI);
+    }
+    else
+    {
+      let walltranslationVector = vec3.fromValues(-halfrange + -1 * 2.5, 0.0, -halfrange + i * 2.5);
+      this.createobj(this.wallmesh, this.walls.indices, this.walls.positions, this.walls.normals, 
+        wallscalingVector, walltranslationVector, 1/2*Math.PI);
+      walltranslationVector = vec3.fromValues(-halfrange + totalnumber * 2.5, 0.0, -halfrange + i * 2.5);
+      this.createobj(this.wallmesh, this.walls.indices, this.walls.positions, this.walls.normals, 
+        wallscalingVector, walltranslationVector, 1/2*Math.PI);
+    }
+  }
 
-  // var scalingVector = vec3.fromValues(1.0, 1.0, 1.0);
-  // var translationVector = vec3.fromValues(1.0, 1.0, 1.0);
-  // var scalingVector2 = vec3.fromValues(0.5, 0.5, 0.5);
-
-  // this.createtriangularprism(indices, positions, normals, scalingVector, translationVector, 1);
-  // this.createtriangularroof(indices, positions, normals, scalingVector, translationVector, scalingVector2, 1);
+  //add corner
+  let wallscalingVector = vec3.fromValues(1.0, 1.0, 1.0);
+  let walltranslationVector = vec3.fromValues(-halfrange + -1 * 2.5, 0.0, -halfrange + -1 * 2.5);
+  this.createobj(this.cornerwall, this.walls.indices, this.walls.positions, this.walls.normals, wallscalingVector, walltranslationVector, 0.0);
+  walltranslationVector = vec3.fromValues(-halfrange + -1 * 2.5, 0.0, -halfrange + totalnumber * 2.5);
+  this.createobj(this.cornerwall, this.walls.indices, this.walls.positions, this.walls.normals, wallscalingVector, walltranslationVector, 0.0);
+  walltranslationVector = vec3.fromValues(-halfrange + totalnumber * 2.5, 0.0, -halfrange + -1 * 2.5);
+  this.createobj(this.cornerwall, this.walls.indices, this.walls.positions, this.walls.normals, wallscalingVector, walltranslationVector, 0.0);  
+  walltranslationVector = vec3.fromValues(-halfrange + totalnumber * 2.5, 0.0, -halfrange + totalnumber * 2.5);
+  this.createobj(this.cornerwall, this.walls.indices, this.walls.positions, this.walls.normals, wallscalingVector, walltranslationVector, 0.0);      
 
   this.indices = new Uint32Array(indices);
   this.positions = new Float32Array(positions);

@@ -31,7 +31,7 @@ const controls = {
   shader: 'fun',
   drawable: 'sphere',
   minroof: 1.0,
-  totalnumber: 40,
+  totalnumber: 35,
   fogdensity:0.3,
 };
 

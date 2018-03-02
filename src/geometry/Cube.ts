@@ -1272,6 +1272,7 @@ class Cube extends Drawable {
       }
     }
   }
+  //var division = Math.max(Math.ceil(totalnumber / 8));
   var randomj = Math.floor(((Math.random() * 2 -1) * 1/9 + 1/3) * totalnumber);
   this.createbridge(randomj, totalnumber, halfrange, symbols);
 
